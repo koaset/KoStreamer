@@ -1,0 +1,26 @@
+body {
+    font: 14px "Century Gothic", Futura, sans-serif;
+    margin: 20px;
+  }
+  
+  ol, ul {
+    padding-left: 30px;
+  }
+  
+  .board-row:after {
+    clear: both;
+    content: "";
+    display: table;
+  }
+  
+  .status {
+    margin-bottom: 10px;
+  }
+
+  .now-playing {
+    margin: auto;
+    width: 50%;
+    text-align: center;
+    color: red
+  }
+  
