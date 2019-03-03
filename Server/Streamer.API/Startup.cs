@@ -13,7 +13,6 @@ namespace Streamer.API
     {
         public Startup(IConfiguration configuration)
         {
-            System.AppContext.SetSwitch("Switch.Microsoft.AspNetCore.Mvc.EnableRangeProcessing", true);
             Configuration = configuration;
             Library.Default = new Library(Configuration);
         }
@@ -24,7 +23,14 @@ namespace Streamer.API
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors(options => {
-                options.AddPolicy("AllowMyOrigin", builder => { builder.WithOrigins("http://localhost:3000"); });
+                options.AddPolicy("AllowMyOrigin", builder =>
+                {
+                    builder.WithOrigins(new string[] {
+                        "http://localhost:3000",
+                        "http://192.168.99.100:8081",
+                        "http://192.168.99.100",
+                        "http://35.228.27.163" });
+                });
             });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);

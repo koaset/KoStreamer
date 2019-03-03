@@ -6,8 +6,9 @@ import "react-table/react-table.css";
 import Progress from './componenets/progressbar';
 import './index.css';
 
-var dockerHosted = false;
-var baseUrl = dockerHosted ? 'http://192.168.99.100:8080/api/' : 'https://localhost:44361/api/';
+var dockerHosted = true;
+
+var baseUrl = //'http://player.koaset.com/api/'; //dockerHosted ? 'http://192.168.99.100:8080/api/' : 'https://localhost:44361/api/';
 
 class Player extends React.Component {
   constructor(props) {
@@ -50,7 +51,7 @@ class Player extends React.Component {
     var playPauseButton = this.playPauseButton();
     var volDownButton = <button onClick={() => this.setState({volume:Math.min(volume + 0.01, 1)})}>vol+</button>;
     var volUpButton = <button onClick={() => this.setState({volume:Math.max(volume - 0.01, 0)})}>vol-</button>;
-    var songUrl = isLoaded && playingSong != null ? baseUrl + 'song/stream/' + playingSong.id : null;
+    var songUrl = isLoaded && playingSong != null ? baseUrl + 'song/play?id=' + playingSong.id : null;
 
     return (
       <div>

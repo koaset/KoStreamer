@@ -34,3 +34,4 @@ msbuild.wrn
 #Other stuff
 node_modules/
 Songs/
+library.json

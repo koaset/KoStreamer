@@ -11,10 +11,9 @@ COPY . ./
 RUN dotnet publish -c Release -o out
 
 # Build runtime image
-FROM microsoft/dotnet:aspnetcore-runtime
+FROM mcr.microsoft.com/dotnet/core/aspnet:2.2.2-alpine3.8
 WORKDIR /app
 
 COPY --from=build-env-api /app/out .
-COPY /Songs ./Songs
 
 ENTRYPOINT ["dotnet", "Streamer.API.dll"]

@@ -14,11 +14,11 @@ namespace Streamer.API.Models
 
         public string Genre { get; set; }
 
-        public int TrackNumber { get; set; }
+        public int? TrackNumber { get; set; }
 
-        public int DiscNumber { get; set; }
+        public int? DiscNumber { get; set; }
 
-        public int Rating { get; set; }
+        public int? Rating { get; set; }
         public string LengthString { get; set; }
         public int DurationMs { get; set; }
 

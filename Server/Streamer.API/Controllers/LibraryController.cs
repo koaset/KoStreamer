@@ -12,6 +12,16 @@ namespace Streamer.API.Controllers
     public class LibraryController : ControllerBase
     {
         private Dictionary<string, Song> songDictionary = Library.Default.songDictionary;
+        
+        [HttpGet("status")]
+        public ActionResult<StatusModel> GetStatus()
+        {
+            return new StatusModel
+            {
+                NumSongs = songDictionary.Count,
+                LibrayLoadTime = Library.Default.libraryLoadMs
+            };
+        }
 
         [HttpGet("songs/names")]
         public ActionResult<List<string>> GetSongNames()
@@ -20,9 +30,18 @@ namespace Streamer.API.Controllers
         }
 
         [HttpGet("songs")]
-        public ActionResult<List<SongModel>> GetSongs()
+        public ActionResult<List<SongModel>> GetSongs(int page = 1, int size = 100)
         {
-            return songDictionary.Values.Select(s => SongModel.FromSong(s)).ToList();
+            if (page < 1)
+            {
+                page = 1;
+            }
+            if (size < 1 || size > 1000)
+            {
+                size = 100;
+            }
+
+            return songDictionary.Skip((page - 1)*size).Take(size).Select(p => SongModel.FromSong(p.Value)).ToList();
         }
 
         [HttpGet("song/{id}")]
@@ -33,7 +52,7 @@ namespace Streamer.API.Controllers
             return SongModel.FromSong(songDictionary[id]);
         }
         
-        [HttpGet("song/stream/{id}")]
+        [HttpGet("song/play")]
         public IActionResult GetSongStream(string id)
         {
             if (!songDictionary.ContainsKey(id))

@@ -2,7 +2,7 @@
 
 namespace Streamer.API.Lib
 {
-    public class Song : IComparable
+    public class Song
     {
         public const string LengthFormat = "%m\\:ss";
 
@@ -16,11 +16,11 @@ namespace Streamer.API.Lib
 
         public string Genre { get; set; }
 
-        public int TrackNumber { get; set; }
+        public int? TrackNumber { get; set; }
 
-        public int DiscNumber { get; set; }
+        public int? DiscNumber { get; set; }
 
-        public int Rating { get; set; }
+        public int? Rating { get; set; }
 
         public int PlayCount { get; set; }
 
@@ -64,34 +64,13 @@ namespace Streamer.API.Lib
             Path = path;
         }
 
-        /// <summary>
-        /// Sortorder according to disc and track numbers
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public int CompareTo(object obj)
-        {
-            if (obj == null) return 1;
-
-            Song otherSong = obj as Song;
-            if (otherSong != null)
-            {
-                if (this.Album.CompareTo(otherSong.Album) == 0)
-                {
-                    if (this.DiscNumber.CompareTo(otherSong.DiscNumber) != 0)
-                        return this.DiscNumber.CompareTo(otherSong.DiscNumber);
-                    else
-                        return this.TrackNumber.CompareTo(otherSong.TrackNumber);
-                }
-                return this.Album.CompareTo(otherSong.Album);
-            }
-            else
-                throw new ArgumentException("Object is not a Song");
-        }
-
         public static Song FromFile(string filePath)
         {
-            var song = new Song { Path = filePath };
+            var song = new Song
+            {
+                Id = Guid.NewGuid().ToString(),
+                Path = filePath
+            };
             using (var track = TagLib.File.Create(filePath))
             {
                 song.ReadTags(track);

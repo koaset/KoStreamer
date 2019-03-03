@@ -7,4 +7,4 @@
 */bin
 */obj
 **/.toolstarget
-library.json
+node_modules
