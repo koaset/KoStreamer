@@ -32,17 +32,15 @@ namespace Streamer.API.Controllers
                 return NotFound();
             return SongModel.FromSong(songDictionary[id]);
         }
-
+        
         [HttpGet("song/stream/{id}")]
-        public ActionResult<Stream> GetSongStream(string id)
+        public IActionResult GetSongStream(string id)
         {
             if (!songDictionary.ContainsKey(id))
                 return NotFound();
-
             var song = songDictionary[id];
             var stream = new StreamReader(song.Path).BaseStream;
-            var result = new FileStreamResult(stream, "audio/mpeg3");
-            return result;
+            return File(stream, "audio/mpeg3", enableRangeProcessing: true);
         }
     }
 }

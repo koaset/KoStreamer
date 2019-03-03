@@ -3,15 +3,17 @@ import ReactDOM from 'react-dom';
 import ReactPlayer from 'react-player'
 import ReactTable from 'react-table'
 import "react-table/react-table.css";
-
+import Progress from './componenets/progressbar';
 import './index.css';
 
-var dockerHosted = true;
+var dockerHosted = false;
 var baseUrl = dockerHosted ? 'http://192.168.99.100:8080/api/' : 'https://localhost:44361/api/';
 
 class Player extends React.Component {
   constructor(props) {
     super(props);
+    this.player = React.createRef();
+    this.progressBar = React.createRef();
     this.state = {
       counter: 0,
       songs: [],
@@ -19,7 +21,8 @@ class Player extends React.Component {
       playingSong: null,
       isLoaded: false,
       volume: 0.1,
-      isPlaying: false
+      isPlaying: false,
+      songProgress: 0
     };
   }
 
@@ -43,46 +46,56 @@ class Player extends React.Component {
     }
 
   render() {
-    const { isPlaying, volume, isLoaded, playingSong } = this.state;
+    const { isPlaying, volume, isLoaded, playingSong, songProgress } = this.state;
     var playPauseButton = this.playPauseButton();
     var volDownButton = <button onClick={() => this.setState({volume:Math.min(volume + 0.01, 1)})}>vol+</button>;
     var volUpButton = <button onClick={() => this.setState({volume:Math.max(volume - 0.01, 0)})}>vol-</button>;
-    
     var songUrl = isLoaded && playingSong != null ? baseUrl + 'song/stream/' + playingSong.id : null;
 
     return (
       <div>
-        <div class='now-playing'>{playingSong === null ? ' ' : 'Playing:' + playingSong.title}</div>
+        <div className='now-playing'>{playingSong === null ? ' ' : 'Playing:' + playingSong.title}</div>
         <div>{playPauseButton}{volDownButton}{volUpButton}</div>
+        <Progress ref={this.progressBar} onClick={(a) => this.clickProgressBar(a)} completed={songProgress == null ? 0 : songProgress} />
         {<ReactPlayer
-              ref={this.ref}
+              ref={this.player}
               className='react-player'
-              playsinline='true'
               width='0%'
               height='0%'
               url={songUrl}
               playing={isPlaying}
               volume={volume}
-              //muted={muted}
-              /*onReady={() => console.log('onReady')}
-              onStart={() => console.log('onStart')}
-              onPlay={this.onPlay}
-              onEnablePIP={this.onEnablePIP}
-              onDisablePIP={this.onDisablePIP}
-              onPause={this.onPause}
-              onBuffer={() => console.log('onBuffer')}
-              onSeek={e => console.log('onSeek', e)}
-              onEnded={this.onEnded}
-              onError={e => console.log('onError', e)}
-              onProgress={this.onProgress}
-              onDuration={this.onDuration}*/
+              progressInterval={50}
+              loop={false}
+              onProgress={o => this.onProgress(o)}
             />}
             {this.songList()}
       </div>
     );
   }
 
-  playPauseButton(){
+  onProgress(progressInfo) {
+    const { playingSong } = this.state;
+    var val = progressInfo.playedSeconds / (playingSong.durationMs / 1000) * 100;
+    var percent = this.clampNumber(val, 0, 100);
+    this.setState({songProgress: percent});
+  }
+
+  clickProgressBar(a) {
+    const playingSong = this.state.playingSong;
+    if (playingSong == null)
+      return;
+    const player = this.player.current;
+    const progressBar = this.progressBar.current;
+    var percent = this.clampNumber(a.pageX/progressBar.state.width, 0, 1);
+    player.seekTo(percent);
+  }
+
+  clampNumber(x, min, max)  {
+    return Math.min(Math.max(x, min), max);
+  }
+
+  playPauseButton() {
     const { isPlaying, selectedSong, playingSong } = this.state;
     return <button onClick={() => { 
       var newIsPlaying = !isPlaying;

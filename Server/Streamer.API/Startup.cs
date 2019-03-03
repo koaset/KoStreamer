@@ -13,6 +13,7 @@ namespace Streamer.API
     {
         public Startup(IConfiguration configuration)
         {
+            System.AppContext.SetSwitch("Switch.Microsoft.AspNetCore.Mvc.EnableRangeProcessing", true);
             Configuration = configuration;
             Library.Default = new Library(Configuration);
         }
@@ -52,7 +53,6 @@ namespace Streamer.API
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
             });
-
             app.UseHttpsRedirection();
             app.UseCors("AllowMyOrigin");
             app.UseMiddleware<RequestResponseLoggingMiddleware>();

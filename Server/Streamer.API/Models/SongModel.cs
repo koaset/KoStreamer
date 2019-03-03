@@ -20,6 +20,7 @@ namespace Streamer.API.Models
 
         public int Rating { get; set; }
         public string LengthString { get; set; }
+        public int DurationMs { get; set; }
 
         public static SongModel FromSong(Song song)
         {
@@ -33,7 +34,8 @@ namespace Streamer.API.Models
                 TrackNumber = song.TrackNumber,
                 DiscNumber = song.DiscNumber,
                 Rating = song.Rating, 
-                LengthString = song.LengthString
+                LengthString = song.LengthString,
+                DurationMs = song.DurationMs
             };
         }
     }
