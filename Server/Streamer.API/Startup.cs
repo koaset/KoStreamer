@@ -3,9 +3,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Streamer.API.Lib;
+using Serilog;
+using Streamer.API.Library;
 using Streamer.API.Middleware;
 using Swashbuckle.AspNetCore.Swagger;
+using System;
+using System.IO;
+using System.Reflection;
 
 namespace Streamer.API
 {
@@ -14,34 +18,45 @@ namespace Streamer.API
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            Library.Default = new Library(Configuration);
+            SongLibrary.Default = new SongLibrary(configuration);
         }
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
+        private readonly string corsAllowedOriginsKey = "AllowMyOrigin";
+
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors(options => {
-                options.AddPolicy("AllowMyOrigin", builder =>
+            services.AddCors(options => 
+            {
+                options.AddPolicy(corsAllowedOriginsKey, builder =>
                 {
                     builder.WithOrigins(new string[] {
-                        "http://localhost:3000",
-                        "http://192.168.99.100:8081",
-                        "http://192.168.99.100",
-                        "http://35.228.27.163" });
+                        "https://dev.player.koaset.com",
+                        "http://dev.player.koaset.com",
+                        "https://player.koaset.com",
+                        "http://player.koaset.com",
+                    })
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
                 });
             });
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "My API", Version = "v1" });
+                c.SwaggerDoc("v1", new Info {
+                    Title = "My API",
+                    Version = "v1"
+                });
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
             });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
@@ -59,8 +74,8 @@ namespace Streamer.API
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
             });
-            app.UseHttpsRedirection();
-            app.UseCors("AllowMyOrigin");
+
+            app.UseCors(corsAllowedOriginsKey);
             app.UseMiddleware<RequestResponseLoggingMiddleware>();
             app.UseMvc();
         }

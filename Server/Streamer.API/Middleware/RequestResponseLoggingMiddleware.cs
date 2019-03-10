@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Serilog;
 using System;
 using System.Threading.Tasks;
 
@@ -19,7 +20,7 @@ namespace Streamer.API.Middleware
             await _next(context);
             var responseStatus = context.Response.StatusCode;
             var logLine = $"{DateTime.UtcNow:yyyy-MM-dd:hh:mm:ss} {request.Method} {request.Scheme} {request.Host}{request.Path} {request.QueryString} {responseStatus}";
-            Console.WriteLine(logLine);
+            Log.Information(logLine);
         }
     }
 }

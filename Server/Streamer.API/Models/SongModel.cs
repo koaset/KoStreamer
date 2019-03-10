@@ -1,4 +1,4 @@
-﻿using Streamer.API.Lib;
+﻿using Streamer.API.Library;
 
 namespace Streamer.API.Models
 {

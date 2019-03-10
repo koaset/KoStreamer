@@ -35,3 +35,4 @@ msbuild.wrn
 node_modules/
 Songs/
 library.json
+/nginx

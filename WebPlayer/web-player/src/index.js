@@ -6,9 +6,7 @@ import "react-table/react-table.css";
 import Progress from './componenets/progressbar';
 import './index.css';
 
-var dockerHosted = true;
-
-var baseUrl = //'http://player.koaset.com/api/'; //dockerHosted ? 'http://192.168.99.100:8080/api/' : 'https://localhost:44361/api/';
+var baseUrl = 'http://192.168.99.100:8080';
 
 class Player extends React.Component {
   constructor(props) {
@@ -16,6 +14,7 @@ class Player extends React.Component {
     this.player = React.createRef();
     this.progressBar = React.createRef();
     this.state = {
+      session: null,
       counter: 0,
       songs: [],
       selectedSong: null,
@@ -25,10 +24,20 @@ class Player extends React.Component {
       isPlaying: false,
       songProgress: 0
     };
+    this.onSignIn = this.onSignIn.bind(this);
   }
 
   componentDidMount() {
-    fetch(baseUrl + "songs")
+    window.gapi.signin2.render('g-signin2', {
+      'scope': 'https://www.googleapis.com/auth/plus.login',
+      'width': 100,
+      'height': 25,
+      'longtitle': false,
+      'theme': 'light',
+      'onSuccess': this.onSignIn
+    }); 
+
+    fetch(baseUrl + "/library/songs")
       .then(res => res.json())
       .then(
         (result) => {
@@ -43,7 +52,37 @@ class Player extends React.Component {
             isLoaded: true
           });
         }
-      )
+      );
+    }
+
+    signOut() {
+      var auth2 = window.gapi.auth2.getAuthInstance();
+      auth2.signOut().then(() => {
+        this.setState({session: null});
+        window.location.reload();
+      });
+    }
+  
+    onSignIn(googleUser) {
+      var idToken = googleUser.getAuthResponse().id_token;
+
+      fetch(baseUrl + "/session/googleAuth", {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({IdToken: idToken})
+      })
+      .then(res => res.json())
+      .then(
+        (result) => {
+          this.setState({session: result.session});
+        },
+        (error) => {
+          console.error('Error when logging in.', error);
+        }
+      );
     }
 
   render() {
@@ -55,6 +94,8 @@ class Player extends React.Component {
 
     return (
       <div>
+        <div id="g-signin2" data-onsuccess="onSignIn" />
+        <button onClick={() => this.signOut()}>Sign out</button>
         <div className='now-playing'>{playingSong === null ? ' ' : 'Playing:' + playingSong.title}</div>
         <div>{playPauseButton}{volDownButton}{volUpButton}</div>
         <Progress ref={this.progressBar} onClick={(a) => this.clickProgressBar(a)} completed={songProgress == null ? 0 : songProgress} />
@@ -188,7 +229,7 @@ class Player extends React.Component {
       playingSong: s,
       isPlaying: true
     })
-}
+  }
 }
 
 // ========================================

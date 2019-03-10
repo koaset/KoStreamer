@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Streamer.API.Lib;
+using Serilog;
 using System.IO;
 
 namespace Streamer.API
@@ -10,6 +10,14 @@ namespace Streamer.API
     {
         public static void Main(string[] args)
         {
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .Enrich.FromLogContext()
+                .WriteTo.Console()
+                .CreateLogger();
+
+            Log.Information("Startup!");
+
             CreateWebHostBuilder(args).Build().Run();
         }
 

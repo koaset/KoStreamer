@@ -7,22 +7,22 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Streamer.API.Lib
+namespace Streamer.API.Library
 {
-    public class Library
+    public class SongLibrary
     {
         public static string[] EXTENSIONS = { ".mp3", ".m4a", ".wma", ".aac", ".flac" };
-        public static Library Default;
+        public static SongLibrary Default;
         public long? libraryLoadMs;
         private readonly List<string> ConfiguredFolders;
         
 
         public Dictionary<string, Song> songDictionary { get; set; }
 
-        public Library(IConfiguration configuration)
+        public SongLibrary(IConfiguration configuration)
         {
             ConfiguredFolders = configuration.GetSection("Library:Folders").Get<List<string>>() ?? new List<string>();
-            
+            ConfiguredFolders = new List<string>();
             //Load();
 
             if (songDictionary == null)
@@ -30,7 +30,7 @@ namespace Streamer.API.Lib
                 songDictionary = new Dictionary<string, Song>();
             }
 
-            //Read(ConfiguredFolders);
+            Read(ConfiguredFolders);
         }
 
         internal void Read()
@@ -53,7 +53,7 @@ namespace Streamer.API.Lib
         private List<string> GetSongsPathsFromFolder(string folderPath)
         {
             var musicFiles = new List<string>();
-            foreach (var extension in Library.EXTENSIONS)
+            foreach (var extension in SongLibrary.EXTENSIONS)
             {
                 musicFiles.AddRange(Directory.GetFiles(folderPath, "*" + extension, SearchOption.AllDirectories));
             }
@@ -106,7 +106,8 @@ namespace Streamer.API.Lib
 
                 using (var sr = new StreamReader(File.OpenRead(libraryFilePath)))
                 {
-                    var lib = JsonConvert.DeserializeObject<List<Song>>(sr.ReadToEnd());
+                    var fileText = sr.ReadToEnd();
+                    var lib = JsonConvert.DeserializeObject<List<Song>>(fileText);
                     foreach (var song in lib)
                     {
                         songDictionary.Add(song.Id, song);
