@@ -76,6 +76,7 @@ namespace Streamer.API
             });
 
             app.UseCors(corsAllowedOriginsKey);
+            app.UseMiddleware<RequestTimerStartMiddleware>();
             app.UseMiddleware<RequestResponseLoggingMiddleware>();
             app.UseMvc();
         }
