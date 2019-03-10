@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 
-namespace Streamer.API.Middleware
+namespace Streamer.API.Startup.Middleware
 {
     public class RequestTimerStartMiddleware
     {

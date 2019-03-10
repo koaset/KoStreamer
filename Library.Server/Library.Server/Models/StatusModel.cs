@@ -1,4 +1,4 @@
-﻿namespace Streamer.API.Models
+﻿namespace Library.Server.Models
 {
     public class StatusModel
     {

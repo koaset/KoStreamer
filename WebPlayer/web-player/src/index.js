@@ -32,7 +32,7 @@ class Player extends React.Component {
     };
     this.onSignIn = this.onSignIn.bind(this);
   }
-
+  
   componentDidMount() {
     window.gapi.signin2.render('g-signin2', {
       'scope': 'https://www.googleapis.com/auth/plus.login',

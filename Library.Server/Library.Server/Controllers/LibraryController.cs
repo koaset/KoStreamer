@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Library.Server.Library;
+using Library.Server.Models;
 using Microsoft.AspNetCore.Mvc;
-using Streamer.API.Library;
-using Streamer.API.Models;
 
-namespace Streamer.API.Controllers
+namespace Library.Server.Controllers
 {
     [Route("library")]
     [Produces("application/json")]
@@ -13,7 +13,7 @@ namespace Streamer.API.Controllers
     public class LibraryController : ControllerBase
     {
         private Dictionary<string, Song> songDictionary = SongLibrary.Default.songDictionary;
-        
+
         [HttpGet("status")]
         public ActionResult<StatusModel> GetStatus()
         {
@@ -22,12 +22,6 @@ namespace Streamer.API.Controllers
                 NumSongs = songDictionary.Count,
                 LibrayLoadTime = SongLibrary.Default.libraryLoadMs
             };
-        }
-
-        [HttpGet("songs/names")]
-        public ActionResult<List<string>> GetSongNames()
-        {
-            return songDictionary.Keys.ToList();
         }
 
         [HttpGet("songs")]

@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore;
+﻿using Library.Server.Startup;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Serilog;
-using Streamer.API.Startup;
 using System.IO;
 
-namespace Streamer.API
+namespace Library.Server
 {
     public class Program
     {

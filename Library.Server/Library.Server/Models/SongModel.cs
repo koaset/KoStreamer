@@ -1,6 +1,6 @@
-﻿using Streamer.API.Library;
+﻿using Library.Server.Library;
 
-namespace Streamer.API.Models
+namespace Library.Server.Models
 {
     public class SongModel
     {

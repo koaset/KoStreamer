@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Streamer.API.Library
+namespace Library.Server.Library
 {
     public class SongLibrary
     {
@@ -15,14 +15,11 @@ namespace Streamer.API.Library
         public static SongLibrary Default;
         public long? libraryLoadMs;
         private readonly List<string> ConfiguredFolders;
-        
-
         public Dictionary<string, Song> songDictionary { get; set; }
 
-        public SongLibrary(IConfiguration configuration)
+        public SongLibrary(List<string> libraryFolders)
         {
-            ConfiguredFolders = configuration.GetSection("Library:Folders").Get<List<string>>() ?? new List<string>();
-            ConfiguredFolders = new List<string>();
+            ConfiguredFolders = libraryFolders ?? new List<string>();
             //Load();
 
             if (songDictionary == null)
@@ -31,6 +28,11 @@ namespace Streamer.API.Library
             }
 
             Read(ConfiguredFolders);
+        }
+
+        public SongLibrary() : this(new List<string>())
+        {
+
         }
 
         internal void Read()

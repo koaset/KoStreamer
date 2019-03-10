@@ -1,6 +1,4 @@
 ﻿using Streamer.API.Entities;
-using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Streamer.API
@@ -37,32 +35,6 @@ namespace Streamer.API
             {
                 return null;
             }
-        }
-
-        private bool TokenInfoResponseValid(GoogleTokenInfoResponse response)
-        {
-            if (response.Aud != streamerAppId || response.Iss != "accounts.google.com")
-                return false;
-            return true;
-        }
-
-        private HttpClient GetClient()
-        {
-            return new HttpClient
-            {
-                BaseAddress = new Uri("https://oauth2.googleapis.com/"),
-                Timeout = TimeSpan.FromSeconds(5)
-            };
-        }
-
-        private class GoogleTokenInfoResponse
-        {
-            public string Iss { get; set; }
-            public string Sub { get; set; }
-            public string Aud { get; set; }
-            public string Email { get; set; }
-            public bool EmailVerified { get; set; }
-            public string Name { get; set; }
         }
     }
 }

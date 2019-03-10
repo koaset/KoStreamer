@@ -1,29 +1,30 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using Library.Server.Library;
+using Library.Server.Startup.Filters;
+using Library.Server.Startup.Middleware;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Serilog;
-using Streamer.API.Library;
-using Streamer.API.Middleware;
 using Swashbuckle.AspNetCore.Swagger;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
-namespace Streamer.API
+namespace Library.Server.Startup
 {
-    public class Startup
+    public class ApiStartup
     {
         private readonly string environment;
 
-        public Startup(IConfiguration configuration)
+        public ApiStartup(IConfiguration configuration)
         {
             environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             Configuration = configuration;
-            SongLibrary.Default = new SongLibrary(configuration);
-            GoogleTokenHelper.Configure(configuration.GetValue<string>("GoogleAppId"));
+            var libraryFolders = configuration.GetSection("Library:Folders").Get<List<string>>();
+            SongLibrary.Default = new SongLibrary(libraryFolders);
         }
 
         public IConfiguration Configuration { get; }
@@ -57,10 +58,11 @@ namespace Streamer.API
                     Title = "My API",
                     Version = "v1"
                 });
-
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
+
+                c.OperationFilter<SessionHeaderFilter>();
             });
         }
 
@@ -84,6 +86,7 @@ namespace Streamer.API
 
             app.UseCors(corsAllowedOriginsKey);
             app.UseMiddleware<RequestTimerStartMiddleware>();
+            app.UseMiddleware<SessionValidatorMiddleware>();
             app.UseMiddleware<RequestResponseLoggingMiddleware>();
             app.UseMvc();
         }

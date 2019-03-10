@@ -3,7 +3,7 @@ using Serilog;
 using System;
 using System.Threading.Tasks;
 
-namespace Streamer.API.Middleware
+namespace Library.Server.Startup.Middleware
 {
     public class RequestResponseLoggingMiddleware
     {

@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 using Serilog;
 using Streamer.API.Entities;
 using Streamer.API.Interfaces;
 using Streamer.API.Models;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Streamer.API.Controllers
@@ -94,9 +96,11 @@ namespace Streamer.API.Controllers
         }
 
         [HttpGet("")]
-        public ActionResult ValidateSession(string sessionId)
+        public ActionResult ValidateSession()
         {
-            var sessionExpiryHours = 2;
+            var sessionId = GetSessionFromHeader();
+            
+            var sessionExpiryHours = 24;
 
             var sessionEntity = dataAccess.GetSession(sessionId);
 
@@ -111,10 +115,23 @@ namespace Streamer.API.Controllers
         }
 
         [HttpDelete("")]
-        public ActionResult DeleteSession(string sessionId)
+        public ActionResult DeleteSession()
         {
+            var sessionId = GetSessionFromHeader();
             dataAccess.InvalidateSession(sessionId);
             return NoContent();
+        }
+
+        private string GetSessionFromHeader()
+        {
+            string sessionId = null;
+
+            if (Request.Headers.ContainsKey("X-Session"))
+            {
+                sessionId = Request.Headers["X-Session"].First();
+            }
+
+            return sessionId;
         }
     }
 }
