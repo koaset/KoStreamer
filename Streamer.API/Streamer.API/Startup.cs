@@ -19,7 +19,8 @@ namespace Streamer.API
         {
             Configuration = configuration;
             SongLibrary.Default = new SongLibrary(configuration);
-        }
+            GoogleTokenHelper.Configure(configuration.GetValue<string>("GoogleAppId"));
+    }
 
         public IConfiguration Configuration { get; }
 

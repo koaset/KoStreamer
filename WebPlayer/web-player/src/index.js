@@ -6,7 +6,7 @@ import "react-table/react-table.css";
 import Progress from './componenets/progressbar';
 import './index.css';
 
-var baseUrl = 'http://192.168.99.100:8080';
+var baseUrl = 'http://docker.dev.player.koaset.com/api';
 
 class Player extends React.Component {
   constructor(props) {

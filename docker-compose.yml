@@ -1,14 +1,30 @@
 version: '3.4'
 
 services:
+  streamer.proxy:
+    build:
+      context: ./Proxy
+    ports:
+      - "80:80"
+    depends_on:
+      - streamer.web
+      - streamer.api
+  streamer.web:
+    build:
+      context: ./WebPlayer/web-player
+    ports:
+      - "3000:80"
   streamer.api:
     image: ${DOCKER_REGISTRY-}streamerapi
-    ports:
-      - "8080:80"
     build:
       context: ./Streamer.API/Streamer.API
+    ports:
+      - "8080:80"
     environment:
       DATABASE_CONNECTIONSTRING: 'Server=database;Database=postgres;Port=5432;User Id=postgres;Password=docker;'
+    depends_on:
+      - database
+      
   database:
     restart: always
     image: postgres:11.2

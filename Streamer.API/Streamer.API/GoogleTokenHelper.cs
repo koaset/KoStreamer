@@ -7,7 +7,12 @@ namespace Streamer.API
 {
     public class GoogleTokenHelper 
     {
-        private static readonly string streamerAppId = "900614446703-5p76k96hle7h4ucg4qgdcclcnl4t7njj.apps.googleusercontent.com";
+        private static string streamerAppId;
+
+        public static void Configure(string appId)
+        {
+            streamerAppId = appId;
+        }
 
         public static async Task<GoogleUserData> ValidateGoogleTokenAndGetUserData(string token)
         {
