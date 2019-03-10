@@ -9,11 +9,15 @@ services:
     depends_on:
       - streamer.web
       - streamer.api
+      
   streamer.web:
     build:
       context: ./WebPlayer/web-player
     ports:
       - "3000:80"
+    environment:
+      STREAMER_API_URL: 'http://dev.player.koaset.com/api'
+
   streamer.api:
     image: ${DOCKER_REGISTRY-}streamerapi
     build:

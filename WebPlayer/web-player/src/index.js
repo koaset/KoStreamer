@@ -6,7 +6,12 @@ import "react-table/react-table.css";
 import Progress from './componenets/progressbar';
 import './index.css';
 
-var baseUrl = 'http://docker.dev.player.koaset.com/api';
+var baseUrl = process.env.STREAMER_API_URL;
+
+if (baseUrl == null)
+{
+  baseUrl = 'https://localhost:44361';
+}
 
 class Player extends React.Component {
   constructor(props) {
@@ -22,7 +27,8 @@ class Player extends React.Component {
       isLoaded: false,
       volume: 0.1,
       isPlaying: false,
-      songProgress: 0
+      songProgress: 0,
+      loadError: null
     };
     this.onSignIn = this.onSignIn.bind(this);
   }
@@ -43,13 +49,15 @@ class Player extends React.Component {
         (result) => {
           this.setState({
             songs: result,
-            isLoaded: true
+            isLoaded: true,
+            loadError: null
           });
         },
         (error) => {
           this.setState({
-            error,
-            isLoaded: true
+            songs: [],
+            isLoaded: true,
+            loadError: error
           });
         }
       );
@@ -86,11 +94,12 @@ class Player extends React.Component {
     }
 
   render() {
-    const { isPlaying, volume, isLoaded, playingSong, songProgress } = this.state;
+    const { isPlaying, volume, isLoaded, playingSong, songProgress, loadError } = this.state;
     var playPauseButton = this.playPauseButton();
     var volDownButton = <button onClick={() => this.setState({volume:Math.min(volume + 0.01, 1)})}>vol+</button>;
     var volUpButton = <button onClick={() => this.setState({volume:Math.max(volume - 0.01, 0)})}>vol-</button>;
     var songUrl = isLoaded && playingSong != null ? baseUrl + 'song/play?id=' + playingSong.id : null;
+    var failedText = <div>{loadError == null ? "" : "Failed to load!"}</div>
 
     return (
       <div>
@@ -99,6 +108,7 @@ class Player extends React.Component {
         <div className='now-playing'>{playingSong === null ? ' ' : 'Playing:' + playingSong.title}</div>
         <div>{playPauseButton}{volDownButton}{volUpButton}</div>
         <Progress ref={this.progressBar} onClick={(a) => this.clickProgressBar(a)} completed={songProgress == null ? 0 : songProgress} />
+        {failedText}
         {<ReactPlayer
               ref={this.player}
               className='react-player'

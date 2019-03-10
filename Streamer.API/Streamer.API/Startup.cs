@@ -8,6 +8,7 @@ using Streamer.API.Library;
 using Streamer.API.Middleware;
 using Swashbuckle.AspNetCore.Swagger;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
@@ -15,12 +16,15 @@ namespace Streamer.API
 {
     public class Startup
     {
+        private readonly string environment;
+
         public Startup(IConfiguration configuration)
         {
+            environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             Configuration = configuration;
             SongLibrary.Default = new SongLibrary(configuration);
             GoogleTokenHelper.Configure(configuration.GetValue<string>("GoogleAppId"));
-    }
+        }
 
         public IConfiguration Configuration { get; }
 
@@ -28,16 +32,18 @@ namespace Streamer.API
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors(options => 
+            services.AddCors(options =>
             {
                 options.AddPolicy(corsAllowedOriginsKey, builder =>
                 {
-                    builder.WithOrigins(new string[] {
-                        "https://dev.player.koaset.com",
-                        "http://dev.player.koaset.com",
-                        "https://player.koaset.com",
-                        "http://player.koaset.com",
-                    })
+                    var allowedOrigins = new List<string>();
+
+                    if (environment == "Local")
+                    {
+                        allowedOrigins.Add("http://local.player.koaset.com");
+                    }
+
+                    builder.WithOrigins(allowedOrigins.ToArray())
                     .AllowAnyHeader()
                     .AllowAnyMethod();
                 });
