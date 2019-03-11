@@ -5,6 +5,7 @@ import ReactTable from 'react-table'
 import "react-table/react-table.css";
 import Progress from './componenets/progressbar';
 import './index.css';
+import GoogleLogin from 'react-google-login';
 
 var baseUrl = process.env.STREAMER_API_URL;
 
@@ -28,22 +29,102 @@ class Player extends React.Component {
       volume: 0.1,
       isPlaying: false,
       songProgress: 0,
-      loadError: null
+      loadError: null,
+      libraryUrl: null
     };
-    this.onSignIn = this.onSignIn.bind(this);
   }
-  
-  componentDidMount() {
-    window.gapi.signin2.render('g-signin2', {
-      'scope': 'https://www.googleapis.com/auth/plus.login',
-      'width': 100,
-      'height': 25,
-      'longtitle': false,
-      'theme': 'light',
-      'onSuccess': this.onSignIn
-    }); 
 
-    fetch(baseUrl + "/library/songs")
+  componentDidMount() {
+
+      try {
+        var storedLogin = JSON.parse(localStorage.getItem('loginResult'));
+        if (storedLogin != null) {
+          
+          this.setState({
+            session: storedLogin.session,
+            libraryUrl: storedLogin.libraryUrl
+          });
+        }
+        this.fetchSongs(storedLogin.session, storedLogin.libraryUrl)
+      }
+      catch (error)
+      {
+        console.log('Error when reading stored login: ' + error);
+      }
+
+      this.setState({isLoaded:true});
+    }
+
+    signOut() {
+      var auth2 = window.gapi.auth2.getAuthInstance();
+      auth2.signOut().then(() => {
+        this.setState({session: null});
+        window.location.reload();
+      });
+    }
+  
+    onSignIn(idToken) {
+      fetch(baseUrl + "/session/googleAuth", {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({IdToken: idToken})
+      })
+      .then(res => res.json())
+      .then(
+        (result) => {
+          
+          this.setState({
+            session: result.session,
+            libraryUrl: result.libraryAddress
+          });
+
+          if (result.libraryAddress != null) {
+            this.fetchSongs();
+          }
+
+          localStorage.setItem('loginResult', JSON.stringify({ session: result.session, libraryUrl: this.state.libraryUrl }));
+        },
+        (error) => {
+          console.error('Error when logging in.', error);
+        }
+      );
+    }
+
+    fetchLibraryUrl() {
+      const { session } = this.state;
+
+      fetch(baseUrl + "/library", {
+        headers: {
+          'Accept': 'application/json',
+          'X-Session': session
+        }
+      })
+      .then(res => res.json())
+      .then(
+        (result) => {
+          this.setState({
+            libraryUrl: result.serverAddress
+          });
+        },
+        () => {
+      }).then(() => this.fetchSongs());
+    }
+
+    fetchSongs(session, libraryUrl) {
+
+      if (libraryUrl == null || session == null) {
+        libraryUrl = this.state.libraryUrl;
+        session = this.state.session;
+      }
+
+      fetch(libraryUrl + "/library/songs", {
+        headers: {
+          'X-Session': session
+        }
+      })
       .then(res => res.json())
       .then(
         (result) => {
@@ -58,56 +139,32 @@ class Player extends React.Component {
             songs: [],
             isLoaded: true,
             loadError: error
-          });
-        }
-      );
-    }
-
-    signOut() {
-      var auth2 = window.gapi.auth2.getAuthInstance();
-      auth2.signOut().then(() => {
-        this.setState({session: null});
-        window.location.reload();
+        });
       });
-    }
-  
-    onSignIn(googleUser) {
-      var idToken = googleUser.getAuthResponse().id_token;
-
-      fetch(baseUrl + "/session/googleAuth", {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({IdToken: idToken})
-      })
-      .then(res => res.json())
-      .then(
-        (result) => {
-          this.setState({session: result.session});
-        },
-        (error) => {
-          console.error('Error when logging in.', error);
-        }
-      );
     }
 
   render() {
-    const { isPlaying, volume, isLoaded, playingSong, songProgress, loadError } = this.state;
+    const { isPlaying, volume, isLoaded, playingSong, songProgress, loadError, session, libraryUrl } = this.state;
     var playPauseButton = this.playPauseButton();
-    var volDownButton = <button onClick={() => this.setState({volume:Math.min(volume + 0.01, 1)})}>vol+</button>;
-    var volUpButton = <button onClick={() => this.setState({volume:Math.max(volume - 0.01, 0)})}>vol-</button>;
-    var songUrl = isLoaded && playingSong != null ? baseUrl + 'song/play?id=' + playingSong.id : null;
+    var volDownButton = <button className='control-button' onClick={() => this.setState({volume:Math.min(volume + 0.01, 1)})}>vol+</button>;
+    var volUpButton = <button className='control-button' onClick={() => this.setState({volume:Math.max(volume - 0.01, 0)})}>vol-</button>;
+    var songUrl = isLoaded && playingSong != null ? libraryUrl + '/library/song/play?id=' + playingSong.id + '&sessionId=' +  session : null;
     var failedText = <div>{loadError == null ? "" : "Failed to load!"}</div>
+
+    var loginButton = <GoogleLogin
+      className='login-button'
+      clientId="900614446703-5p76k96hle7h4ucg4qgdcclcnl4t7njj.apps.googleusercontent.com"
+      buttonText="Login"
+      onSuccess={(r) => this.onSignIn(r.tokenObj.id_token)}
+      onFailure={() =>{}}
+    />
 
     return (
       <div>
-        <div id="g-signin2" data-onsuccess="onSignIn" />
-        <button onClick={() => this.signOut()}>Sign out</button>
         <div className='now-playing'>{playingSong === null ? ' ' : 'Playing:' + playingSong.title}</div>
-        <div>{playPauseButton}{volDownButton}{volUpButton}</div>
-        <Progress ref={this.progressBar} onClick={(a) => this.clickProgressBar(a)} completed={songProgress == null ? 0 : songProgress} />
+        <div className='menu-bar'>{playPauseButton}{volDownButton}{volUpButton}{loginButton}</div>
+        
+        <Progress className='search-bar' ref={this.progressBar} onClick={(a) => this.clickProgressBar(a)} completed={songProgress == null ? 0 : songProgress} />
         {failedText}
         {<ReactPlayer
               ref={this.player}
@@ -149,7 +206,7 @@ class Player extends React.Component {
 
   playPauseButton() {
     const { isPlaying, selectedSong, playingSong } = this.state;
-    return <button onClick={() => { 
+    return <button className='control-button' onClick={() => { 
       var newIsPlaying = !isPlaying;
       var songToPlay = playingSong === null ? selectedSong : playingSong;
       this.setState({

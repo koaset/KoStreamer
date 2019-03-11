@@ -1,10 +1,9 @@
 ﻿using Npgsql;
-using Serilog;
 using Streamer.API.Entities;
 using Streamer.API.Interfaces;
 using System;
 
-namespace Streamer.API
+namespace Streamer.API.Services
 {
     public class DataAccess : IDataAccess
     {
@@ -25,6 +24,28 @@ namespace Streamer.API
                 using (var cmd = new NpgsqlCommand($"SELECT {GetAccountDataFields} FROM accounts WHERE account_id=@account_id", conn))
                 {
                     cmd.Parameters.Add(new NpgsqlParameter("account_id", id));
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return ReadAccount(reader);
+                        }
+                        return null;
+                    }
+                }
+            }
+        }
+
+        public Account GetAccountByUserSecret(string userSecret)
+        {
+            using (var conn = new NpgsqlConnection(connectionString))
+            {
+                conn.Open();
+
+                using (var cmd = new NpgsqlCommand($"SELECT {GetAccountDataFields} FROM accounts WHERE user_secret=@user_secret", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter("user_secret", userSecret));
 
                     using (var reader = cmd.ExecuteReader())
                     {
@@ -104,19 +125,20 @@ namespace Streamer.API
             {
                 conn.Open();
 
-                using (var cmd = new NpgsqlCommand("INSERT INTO accounts VALUES (@account_id, @google_id, @email, @name, @created)", conn))
+                using (var cmd = new NpgsqlCommand("INSERT INTO accounts VALUES (@account_id, @google_id, @email, @name, @created, @user_secret)", conn))
                 {
                     cmd.Parameters.Add(new NpgsqlParameter("account_id", account.AccountId));
                     cmd.Parameters.Add(new NpgsqlParameter("google_id", account.GoogleId));
                     cmd.Parameters.Add(new NpgsqlParameter("email", account.Email));
                     cmd.Parameters.Add(new NpgsqlParameter("name", account.Name));
                     cmd.Parameters.Add(new NpgsqlParameter("created", account.CreatedDate));
+                    cmd.Parameters.Add(new NpgsqlParameter("user_secret", account.UserSecret));
                     cmd.ExecuteNonQuery();
                 }
             }
         }
 
-        private string GetAccountDataFields =>  "account_id, google_id, email, name, created";
+        private string GetAccountDataFields =>  "account_id, google_id, email, name, created, user_secret";
 
         private Account ReadAccount(NpgsqlDataReader reader)
         {
@@ -126,7 +148,8 @@ namespace Streamer.API
                 GoogleId = reader["google_id"].ToString(),
                 Email = reader["email"].ToString(),
                 Name = reader["name"].ToString(),
-                CreatedDate = ((DateTime)reader["created"]).ToUniversalTime()
+                CreatedDate = ((DateTime)reader["created"]).ToUniversalTime(),
+                UserSecret = reader["user_secret"].ToString()
             };
         }
 
@@ -186,6 +209,55 @@ namespace Streamer.API
                 {
                     cmd.Parameters.Add(new NpgsqlParameter("session_id", sessionId));
                     cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public void AddLibrary(AccountLibrary library)
+        {
+            using (var conn = new NpgsqlConnection(connectionString))
+            {
+                conn.Open();
+
+                using (var cmd = new NpgsqlCommand("INSERT INTO account_libraries VALUES (@library_id, @account_id, @server_address, @added, @last_active)", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter("library_id", library.LibraryId));
+                    cmd.Parameters.Add(new NpgsqlParameter("account_id", library.AccountId));
+                    cmd.Parameters.Add(new NpgsqlParameter("server_address", library.ServerAddress));
+                    cmd.Parameters.Add(new NpgsqlParameter("added", library.DateAdded));
+                    cmd.Parameters.Add(new NpgsqlParameter("last_active", library.LastActive));
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public AccountLibrary GetLibrary(string accountId)
+        {
+            using (var conn = new NpgsqlConnection(connectionString))
+            {
+                conn.Open();
+
+                using (var cmd = new NpgsqlCommand($"SELECT library_id, account_id, server_address, added, last_active FROM account_libraries WHERE account_id=@account_id", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter("account_id", accountId));
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new AccountLibrary
+                            {
+                                
+                                LibraryId = reader["library_id"].ToString(),
+                                AccountId = reader["account_id"].ToString(),
+                                ServerAddress = reader["server_address"].ToString(),
+                                DateAdded = ((DateTime)reader["added"]).ToUniversalTime(),
+                                LastActive = ((DateTime)reader["last_active"]).ToUniversalTime()
+                            };
+                        }
+                        return null;
+                    }
+
                 }
             }
         }

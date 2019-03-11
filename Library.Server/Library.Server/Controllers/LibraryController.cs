@@ -46,9 +46,9 @@ namespace Library.Server.Controllers
                 return NotFound();
             return SongModel.FromSong(songDictionary[id]);
         }
-        
+
         [HttpGet("song/play")]
-        public IActionResult GetSongStream(string id)
+        public IActionResult GetSongStream(string id, string sessionId = "")
         {
             if (!songDictionary.ContainsKey(id))
                 return NotFound();

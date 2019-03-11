@@ -4,7 +4,7 @@ body {
   }
   
   ol, ul {
-    padding-left: 30px;
+    padding-left: 50px;
   }
   
   .board-row:after {
@@ -22,5 +22,29 @@ body {
     width: 50%;
     text-align: center;
     color: red
+  }
+
+  .menu-bar {
+    background: #AAA;
+    overflow: hidden;
+    height: 50px;
+  }
+  
+  .control-button {
+    height: 50px;
+  }
+
+  .login-button {
+    margin: auto;
+    margin-top: 2.5px;
+    margin-right: 3px;
+    height: 45px;
+    float: right;
+    top: 90%
+  }
+
+  .search-bar {
+    background: gray;
+    color: blue;
   }
   

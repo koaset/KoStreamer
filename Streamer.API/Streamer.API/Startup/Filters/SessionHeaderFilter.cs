@@ -2,7 +2,7 @@
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
 
-namespace Library.Server.Startup.Filters
+namespace Streamer.API.Startup.Filters
 {
     public class SessionHeaderFilter : IOperationFilter
     {
@@ -16,7 +16,7 @@ namespace Library.Server.Startup.Filters
                 Name = "X-Session",
                 In = "header",
                 Type = "string",
-                Required = true
+                Required = false
             });
         }
     }

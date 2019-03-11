@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Streamer.API.Interfaces;
+using Streamer.API.Services;
+using Streamer.API.Startup.Filters;
 using Streamer.API.Startup.Middleware;
 using Swashbuckle.AspNetCore.Swagger;
 using System;
@@ -46,8 +49,13 @@ namespace Streamer.API.Startup
                 });
             });
 
+            services.AddHttpContextAccessor();
+            services.AddSingleton<IDataAccess, DataAccess>();
+            services.AddTransient<ISessionValidator, SessionValidator>();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-            
+
+            // Swagger
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new Info {
@@ -58,12 +66,14 @@ namespace Streamer.API.Startup
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
+
+                c.OperationFilter<SessionHeaderFilter>();
             });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            if (env.IsDevelopment())
+            if (env.IsDevelopment() || env.IsEnvironment("Local"))
             {
                 app.UseDeveloperExceptionPage();
             }

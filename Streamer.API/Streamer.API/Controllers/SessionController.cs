@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Primitives;
 using Serilog;
 using Streamer.API.Entities;
 using Streamer.API.Interfaces;
 using Streamer.API.Models;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Streamer.API.Controllers
@@ -15,7 +13,14 @@ namespace Streamer.API.Controllers
     [ApiController]
     public class SessionController : ControllerBase
     {
-        private readonly IDataAccess dataAccess = new DataAccess();
+        private readonly IDataAccess dataAccess;
+        private readonly ISessionValidator sessionValidator;
+
+        public SessionController(IDataAccess dataAccess, ISessionValidator sessionValidator)
+        {
+            this.dataAccess = dataAccess;
+            this.sessionValidator = sessionValidator;
+        }
 
         [HttpPost("googleAuth")]
         public async Task<ActionResult<LoginResponseModel>> PostGoogleLogin(GoogleLoginRequestModel model)
@@ -37,7 +42,12 @@ namespace Streamer.API.Controllers
             var sessionEntity = CreateNewSession(account);
             dataAccess.AddSession(sessionEntity);
 
-            return new LoginResponseModel { Session = sessionEntity.SessionId };
+            var library = dataAccess.GetLibrary(account.AccountId);
+
+            return new LoginResponseModel {
+                Session = sessionEntity.SessionId,
+                LibraryAddress = library?.ServerAddress
+            };
         }
 
         private Session CreateNewSession(Account account)
@@ -64,7 +74,8 @@ namespace Streamer.API.Controllers
                 GoogleId = googleData.Id,
                 Name = googleData.Name,
                 Email = googleData.Email,
-                CreatedDate = DateTime.UtcNow
+                CreatedDate = DateTime.UtcNow,
+                UserSecret = Guid.NewGuid().ToString()
             };
 
             dataAccess.AddNewAccount(account);
@@ -89,7 +100,7 @@ namespace Streamer.API.Controllers
                 {
                     throw new Exception();
                 }
-                    
+
             } while (!idIsValid(newId));
 
             return newId;
@@ -98,40 +109,21 @@ namespace Streamer.API.Controllers
         [HttpGet("")]
         public ActionResult ValidateSession()
         {
-            var sessionId = GetSessionFromHeader();
-            
-            var sessionExpiryHours = 24;
-
-            var sessionEntity = dataAccess.GetSession(sessionId);
-
-            if (sessionEntity == null || 
-                sessionEntity.Invalidated ||
-                sessionEntity.CreatedDate < DateTime.UtcNow.AddHours(-sessionExpiryHours))
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var isJNotValid = !sessionValidator.RequestSessionIsValid();
+            sw.Stop();
+            if (isJNotValid)
             {
                 return Unauthorized();
             }
-
             return NoContent();
         }
 
         [HttpDelete("")]
         public ActionResult DeleteSession()
         {
-            var sessionId = GetSessionFromHeader();
-            dataAccess.InvalidateSession(sessionId);
+            sessionValidator.DeleteSession();
             return NoContent();
-        }
-
-        private string GetSessionFromHeader()
-        {
-            string sessionId = null;
-
-            if (Request.Headers.ContainsKey("X-Session"))
-            {
-                sessionId = Request.Headers["X-Session"].First();
-            }
-
-            return sessionId;
         }
     }
 }

@@ -20,17 +20,23 @@ namespace Library.Server.Library
         public SongLibrary(List<string> libraryFolders)
         {
             ConfiguredFolders = libraryFolders ?? new List<string>();
-            //Load();
+
+            Load();
 
             if (songDictionary == null)
             {
                 songDictionary = new Dictionary<string, Song>();
             }
-
-            Read(ConfiguredFolders);
+            /*Read();
+            Save();*/
         }
 
         public SongLibrary() : this(new List<string>())
+        {
+
+        }
+
+        private void ScanLibrary()
         {
 
         }
@@ -48,8 +54,6 @@ namespace Library.Server.Library
                 paths.AddRange(GetSongsPathsFromFolder(folder));
             }
             TryAddSongs(paths);
-
-            Save();
         }
 
         private List<string> GetSongsPathsFromFolder(string folderPath)
@@ -125,7 +129,7 @@ namespace Library.Server.Library
         public void Save()
         {
             var libraryFilePath = "library.json";
-            var jsonLib = JsonConvert.SerializeObject(songDictionary.Values);
+            var jsonLib = JsonConvert.SerializeObject(songDictionary.Values.ToList());
             using (var sw = new StreamWriter(File.OpenWrite(libraryFilePath)))
             {
                 sw.Write(jsonLib);
