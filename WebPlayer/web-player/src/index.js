@@ -5,6 +5,7 @@ import ReactTable from 'react-table'
 import "react-table/react-table.css";
 import Progress from './componenets/progressbar';
 import './index.css';
+import 'bootstrap/dist/css/bootstrap.css';
 import GoogleLogin from 'react-google-login';
 
 var baseUrl = process.env.STREAMER_API_URL;
@@ -144,43 +145,58 @@ class Player extends React.Component {
     }
 
   render() {
-    const { isPlaying, volume, isLoaded, playingSong, songProgress, loadError, session, libraryUrl } = this.state;
+    const { isPlaying, volume, isLoaded, playingSong, loadError, session, libraryUrl } = this.state;
     var playPauseButton = this.playPauseButton();
     var volDownButton = <button className='control-button' onClick={() => this.setState({volume:Math.min(volume + 0.01, 1)})}>vol+</button>;
     var volUpButton = <button className='control-button' onClick={() => this.setState({volume:Math.max(volume - 0.01, 0)})}>vol-</button>;
     var songUrl = isLoaded && playingSong != null ? libraryUrl + '/library/song/play?id=' + playingSong.id + '&sessionId=' +  session : null;
     var failedText = <div>{loadError == null ? "" : "Failed to load!"}</div>
 
-    var loginButton = <GoogleLogin
-      className='login-button'
-      clientId="900614446703-5p76k96hle7h4ucg4qgdcclcnl4t7njj.apps.googleusercontent.com"
-      buttonText="Login"
-      onSuccess={(r) => this.onSignIn(r.tokenObj.id_token)}
-      onFailure={() =>{}}
-    />
-
     return (
       <div>
-        <div className='now-playing'>{playingSong === null ? ' ' : 'Playing:' + playingSong.title}</div>
-        <div className='menu-bar'>{playPauseButton}{volDownButton}{volUpButton}{loginButton}</div>
+        <div className='menu-bar'>
+          <div className='control-buttons'>
+            {playPauseButton}
+            {volDownButton}
+            {volUpButton}
+          </div>
+          {<GoogleLogin
+            className='login-button'
+            clientId="900614446703-5p76k96hle7h4ucg4qgdcclcnl4t7njj.apps.googleusercontent.com"
+            buttonText="Login"
+            onSuccess={(r) => this.onSignIn(r.tokenObj.id_token)}
+            onFailure={() =>{}}
+          />}
+          <div className='now-playing'>{playingSong === null ? ' ' : playingSong.title + ' - ' +  playingSong.artist}</div>
+        </div>
         
-        <Progress className='search-bar' ref={this.progressBar} onClick={(a) => this.clickProgressBar(a)} completed={songProgress == null ? 0 : songProgress} />
+        {this.songList()}
         {failedText}
         {<ReactPlayer
-              ref={this.player}
-              className='react-player'
-              width='0%'
-              height='0%'
-              url={songUrl}
-              playing={isPlaying}
-              volume={volume}
-              progressInterval={50}
-              loop={false}
-              onProgress={o => this.onProgress(o)}
-            />}
-            {this.songList()}
+          ref={this.player}
+          className='react-player'
+          width='0%'
+          height='0%'
+          url={songUrl}
+          playing={isPlaying}
+          volume={volume}
+          progressInterval={50}
+          loop={false}
+          onProgress={o => this.onProgress(o)}
+        />}
+        {this.progressBarRender()}
       </div>
     );
+  }
+
+  progressBarRender() {
+    const songProgress = this.state.songProgress;
+    return <Progress 
+      className='search-bar' 
+      ref={this.progressBar} 
+      onClick={(a) => this.clickProgressBar(a)} 
+      completed={songProgress == null ? 0 : songProgress
+    }/>
   }
 
   onProgress(progressInfo) {
@@ -205,15 +221,31 @@ class Player extends React.Component {
   }
 
   playPauseButton() {
-    const { isPlaying, selectedSong, playingSong } = this.state;
+    const { selectedSong, playingSong } = this.state;
     return <button className='control-button' onClick={() => { 
-      var newIsPlaying = !isPlaying;
-      var songToPlay = playingSong === null ? selectedSong : playingSong;
-      this.setState({
-        isPlaying:newIsPlaying,
-        playingSong:songToPlay
-      })}
+        var songToPlay = playingSong === null ? selectedSong : playingSong;
+        this.playOrPause(songToPlay);
+        
+        if (this.state.isPlaying)
+        {
+          this.pauseSong();
+          return;
+        }
+
+        this.playSong(songToPlay);
+      }
     }>play/pause</button>
+  }
+
+  pauseSong() {
+    this.setState({isPlaying:false});
+  }
+
+  playSong(s) {
+    this.setState({
+      playingSong: s,
+      isPlaying: true
+    });
   }
 
   songList() {
@@ -262,7 +294,7 @@ class Player extends React.Component {
           }
         ]}
         defaultPageSize={10}
-        className="-striped -highlight"
+        className="song-table -striped -highlight"
         getTdProps={(state, rowInfo, column, instance) => {
           return {
             onClick: (e, handleOriginal) => {

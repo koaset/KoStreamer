@@ -10,6 +10,7 @@ class Progress extends React.Component {
 
   componentDidMount() {
     this.setState({width: this.divRef.current.offsetWidth})
+    setInterval(() => this.setState({ time: Date.now()}), 1000)
   }
 
   static propTypes = {
@@ -31,7 +32,7 @@ class Progress extends React.Component {
   static defaultProps = {
     completed: 0,
     color: '#0BD318',
-    animation: 200,
+    animation: 0,
     height: 10
   }
 

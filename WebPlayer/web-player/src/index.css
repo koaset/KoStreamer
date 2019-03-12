@@ -1,50 +1,51 @@
 body {
+    margin: 0px;
     font: 14px "Century Gothic", Futura, sans-serif;
-    margin: 20px;
   }
   
-  ol, ul {
-    padding-left: 50px;
-  }
-  
-  .board-row:after {
-    clear: both;
-    content: "";
-    display: table;
-  }
-  
-  .status {
-    margin-bottom: 10px;
-  }
+.menu-bar {
+  background: whitesmoke;
+  height: 50px;
+  width: 100%;
+  display: table;
+  vertical-align: middle;
+}
 
-  .now-playing {
-    margin: auto;
-    width: 50%;
-    text-align: center;
-    color: red
-  }
+.control-buttons {
+  height: 50px;
+  float: left;
+}
 
-  .menu-bar {
-    background: #AAA;
-    overflow: hidden;
-    height: 50px;
-  }
-  
-  .control-button {
-    height: 50px;
-  }
+.control-button {
+  height: 100%;
+  float: left;
+}
 
-  .login-button {
-    margin: auto;
-    margin-top: 2.5px;
-    margin-right: 3px;
-    height: 45px;
-    float: right;
-    top: 90%
-  }
+.now-playing {
+  text-align: center;  
+  margin-top: 12.5px;
+  color: black;
+  font-size: 15px;
+  font-weight: 600;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
 
-  .search-bar {
-    background: gray;
-    color: blue;
-  }
-  
+.login-button {
+  float: right;
+  height: 50px;
+}
+
+.search-bar {
+  height: 15px;
+  color: blue;
+}
+
+.react-player {
+  visibility: hidden
+}
+
+.song-table {
+
+}
