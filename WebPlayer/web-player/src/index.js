@@ -5,15 +5,9 @@ import ReactTable from 'react-table'
 import "react-table/react-table.css";
 import Progress from './componenets/progressbar';
 import './index.css';
-import 'bootstrap/dist/css/bootstrap.css';
 import GoogleLogin from 'react-google-login';
 
-var baseUrl = process.env.STREAMER_API_URL;
-
-if (baseUrl == null)
-{
-  baseUrl = 'https://localhost:44361';
-}
+var baseUrl = 'https://localhost:44361';
 
 class Player extends React.Component {
   constructor(props) {

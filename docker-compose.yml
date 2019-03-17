@@ -1,15 +1,7 @@
 version: '3.4'
 
 services:
-  streamer.proxy:
-    build:
-      context: ./Proxy
-    ports:
-      - "80:80"
-    depends_on:
-      - streamer.web
-      - streamer.api
-      
+
   streamer.web:
     build:
       context: ./WebPlayer/web-player

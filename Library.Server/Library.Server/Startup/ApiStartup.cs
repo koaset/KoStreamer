@@ -13,6 +13,7 @@ using Swashbuckle.AspNetCore.Swagger;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Reflection;
 
 namespace Library.Server.Startup
@@ -20,12 +21,13 @@ namespace Library.Server.Startup
     public class ApiStartup
     {
         private readonly string environment;
+        private readonly IConfiguration configuration;
 
         public ApiStartup(IConfiguration configuration)
         {
+            this.configuration = configuration;
             environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
-            Configuration = configuration;
             var libraryFolders = configuration.GetSection("Library:Folders").Get<List<string>>();
             SongLibrary.Default = new SongLibrary(libraryFolders);
 
@@ -36,12 +38,7 @@ namespace Library.Server.Startup
                 Log.Error("UserSecret not configured");
                 throw new Exception("Missing configuration: UserSecret");
             }
-
-            NatHelper.MakeSureNatMappingExists();
-            new StreamerApiAccess(configuration).AuthenticateLibraryAsync();
         }
-
-        public IConfiguration Configuration { get; }
 
         private readonly string corsAllowedOriginsKey = "AllowMyOrigin";
 
@@ -58,13 +55,12 @@ namespace Library.Server.Startup
                         allowedOrigins.Add("http://local.player.koaset.com");
                     }
 
+                    allowedOrigins.Add("https://player.koaset.com");
                     builder.WithOrigins(allowedOrigins.ToArray())
                     .AllowAnyHeader()
                     .AllowAnyMethod();
                 });
             });
-
-            services.AddTransient<IStreamerApiAccess, StreamerApiAccess>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             
@@ -80,6 +76,13 @@ namespace Library.Server.Startup
 
                 c.OperationFilter<SessionFilter>();
             });
+
+            services.AddTransient<IStreamerApiAccess, StreamerApiAccess>();
+
+            NatHelper.MakeSureNatMappingExists();
+
+            var serviceProvider = services.BuildServiceProvider();
+            serviceProvider.GetService<IStreamerApiAccess>().AuthenticateLibraryAsync();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

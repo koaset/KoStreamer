@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
+using Serilog;
 using Streamer.API.Entities;
 using Streamer.API.Interfaces;
 using Streamer.API.Models;
@@ -30,12 +32,14 @@ namespace Streamer.API.Controllers
                 return Unauthorized();
             }
 
-            var serverAddress = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+            var serverAddress = Request.HttpContext.GetRemoteIPAddress(true).ToString();
 
             if (serverAddress == "::1")
             {
                 serverAddress = "localhost";
             }
+
+            Log.Information("{user_ip}", serverAddress);
 
             serverAddress = $"https://{serverAddress}:44362";
 

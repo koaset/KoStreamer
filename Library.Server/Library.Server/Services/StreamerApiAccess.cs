@@ -23,32 +23,32 @@ namespace Library.Server.Services
 
         public async void AuthenticateLibraryAsync()
         {
-            var client = new HttpClient
-            {
-                BaseAddress = new Uri(streamerApiUrl),
-                Timeout = TimeSpan.FromSeconds(10)
-            };
+            var client = GetClient();
 
             var requestObject = new {
                 userSecret
             };
 
             var content = new StringContent(JsonConvert.SerializeObject(requestObject), Encoding.UTF8, "application/json");
-            var result = await client.PostAsync($"library", content);
 
-            if (result.StatusCode != HttpStatusCode.NoContent)
+            try
             {
-                Log.Error("Unable to authenticate library. Recieved status code: " + result.StatusCode);
+                var result = await client.PostAsync($"library", content);
+
+                if (result.StatusCode != HttpStatusCode.NoContent)
+                {
+                    Log.Error("Unable to authenticate library. Recieved status code: " + result.StatusCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{message}", "Exception when registering API");
             }
         }
 
         public async Task<bool> IsSessionValidAsync(string session)
         {
-            var client = new HttpClient
-            {
-                BaseAddress = new Uri(streamerApiUrl),
-                Timeout = TimeSpan.FromSeconds(10)
-            };
+            var client = GetClient();
 
             client.DefaultRequestHeaders.Add("X-Session", session);
 
@@ -56,10 +56,11 @@ namespace Library.Server.Services
             {
                 return false;
             }
+            
 
             client.DefaultRequestHeaders.Add("X-UserSecret", userSecret);
 
-            var result = await client.GetAsync($"session");
+            var result = await client.GetAsync("api/session");
 
             if (result.StatusCode != HttpStatusCode.NoContent)
             {
@@ -68,6 +69,20 @@ namespace Library.Server.Services
             }
 
             return true;
+        }
+
+        private HttpClient GetClient()
+        {
+            var client = new HttpClient(
+                new HttpClientHandler
+                {
+                    UseProxy = false
+                })
+            {
+                Timeout = TimeSpan.FromSeconds(5),
+                BaseAddress = new Uri(streamerApiUrl)
+            };
+            return client;
         }
     }
 }

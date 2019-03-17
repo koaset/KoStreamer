@@ -11,7 +11,7 @@ namespace Library.Server.Startup
             try
             {
                 var deviceTask = new NatDiscoverer().DiscoverDeviceAsync();
-                var portMapping = new Mapping(Protocol.Tcp, 23200, 32600, "Library.Server");
+                var portMapping = new Mapping(Protocol.Tcp, 5000, 32600, "Library.Server");
                 var device = await deviceTask;
                 await device.CreatePortMapAsync(portMapping);
             }

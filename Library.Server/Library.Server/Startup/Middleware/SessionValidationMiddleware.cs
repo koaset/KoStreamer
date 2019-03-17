@@ -18,6 +18,12 @@ namespace Library.Server.Startup.Middleware
 
         public async Task Invoke(HttpContext context)
         {
+            if (context.Request.Path.Value.StartsWith("/ping"))
+            {
+                await _next(context);
+                return;
+            }
+
             var session = context.Request.Headers["X-Session"];
 
             if (string.IsNullOrEmpty(session) && context.Request.Query.ContainsKey("sessionId"))
@@ -28,7 +34,6 @@ namespace Library.Server.Startup.Middleware
             var secret = context.Request.Headers["X-UserSecret"];
 
             var isSessionValid = streamerApi.IsSessionValidAsync(session).Result;
-
             if (!isSessionValid)
             {
                 context.Response.StatusCode = 401;

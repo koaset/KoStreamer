@@ -1,9 +1,11 @@
 ﻿using Library.Server.Startup;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 using System.IO;
+using System.Net;
 
 namespace Library.Server
 {
@@ -24,10 +26,18 @@ namespace Library.Server
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((hostingContext, config) =>
+            .ConfigureAppConfiguration((hostingContext, config) =>
+            {
+                config.SetBasePath(Directory.GetCurrentDirectory());
+            })
+            .ConfigureKestrel((context, options) =>
+            {
+                options.Listen(IPAddress.Any, 5000, listenOptions =>
                 {
-                    config.SetBasePath(Directory.GetCurrentDirectory());
-                })
-                .UseStartup<ApiStartup>();
+                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+                    listenOptions.UseHttps("testCert.pfx", "test22");
+                });
+            })
+            .UseStartup<ApiStartup>();
     }
 }
