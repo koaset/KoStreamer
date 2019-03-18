@@ -55,7 +55,7 @@ namespace Library.Server.Startup
                         allowedOrigins.Add("http://local.player.koaset.com");
                     }
 
-                    allowedOrigins.Add("https://player.koaset.com");
+                    allowedOrigins.Add("https://koaset.com");
                     builder.WithOrigins(allowedOrigins.ToArray())
                     .AllowAnyHeader()
                     .AllowAnyMethod();

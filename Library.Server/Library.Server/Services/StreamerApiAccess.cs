@@ -26,14 +26,14 @@ namespace Library.Server.Services
             var client = GetClient();
 
             var requestObject = new {
-                userSecret
+                UserSecret = userSecret
             };
 
             var content = new StringContent(JsonConvert.SerializeObject(requestObject), Encoding.UTF8, "application/json");
 
             try
             {
-                var result = await client.PostAsync($"library", content);
+                var result = await client.PostAsync($"api/library", content);
 
                 if (result.StatusCode != HttpStatusCode.NoContent)
                 {

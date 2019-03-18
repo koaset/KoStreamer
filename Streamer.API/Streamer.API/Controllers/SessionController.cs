@@ -36,7 +36,8 @@ namespace Streamer.API.Controllers
 
             if (account == null)
             {
-                account = CreateAccount(model, googleData);
+                return NotFound();
+                //account = CreateAccount(model, googleData);
             }
 
             var sessionEntity = CreateNewSession(account);
