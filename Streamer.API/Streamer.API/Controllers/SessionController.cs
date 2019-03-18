@@ -43,11 +43,8 @@ namespace Streamer.API.Controllers
             var sessionEntity = CreateNewSession(account);
             dataAccess.AddSession(sessionEntity);
 
-            var library = dataAccess.GetLibrary(account.AccountId);
-
             return new LoginResponseModel {
-                Session = sessionEntity.SessionId,
-                LibraryAddress = library?.ServerAddress
+                Session = sessionEntity.SessionId
             };
         }
 

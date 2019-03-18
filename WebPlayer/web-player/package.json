@@ -8,7 +8,7 @@
     "react-dom": "^16.4.2",
     "react-google-login": "^5.0.2",
     "react-player": "^1.9.3",
-    "react-router-dom": "^4.4.0",
+    "react-router-dom": "^5.0.0",
     "react-scripts": "1.1.5",
     "react-table": "^6.9.2"
   },

@@ -2,7 +2,6 @@
 using Streamer.API.Entities;
 using Streamer.API.Interfaces;
 using System;
-using System.Linq;
 
 namespace Streamer.API.Services
 {
@@ -41,13 +40,10 @@ namespace Streamer.API.Services
 
             if (string.IsNullOrEmpty(sessionId))
             {
-                return null;
+                sessionId = GetSessionFromQuery();
             }
 
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-            var result = dataAccess.GetSession(sessionId);
-            sw.Stop();
-            return result;
+            return dataAccess.GetSession(sessionId);
         }
 
         public void DeleteSession()
@@ -58,15 +54,14 @@ namespace Streamer.API.Services
 
         private string GetSessionFromHeader()
         {
-            string sessionId = null;
             var request = httpContextAccessor.HttpContext.Request;
+            return request.Headers.TryGetValue("X-Session", out var sessionId) ? (string)sessionId : null;
+        }
 
-            if (request.Headers.ContainsKey("X-Session"))
-            {
-                sessionId = request.Headers["X-Session"].First();
-            }
-
-            return sessionId;
+        private string GetSessionFromQuery()
+        {
+            var request = httpContextAccessor.HttpContext.Request;
+            return request.Query.TryGetValue("sessionId", out var sessionId) ? (string)sessionId : null;
         }
     }
 }

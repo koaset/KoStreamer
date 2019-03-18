@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Primitives;
-using Serilog;
-using Streamer.API.Entities;
 using Streamer.API.Interfaces;
+using Streamer.API.Library;
 using Streamer.API.Models;
-using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace Streamer.API.Controllers
 {
@@ -15,64 +15,55 @@ namespace Streamer.API.Controllers
     {
         private readonly IDataAccess dataAccess;
         private readonly ISessionValidator sessionValidator;
+        private Dictionary<string, Song> songDictionary = SongLibrary.Default.songDictionary;
 
         public LibraryController(IDataAccess dataAccess, ISessionValidator sessionValidator)
         {
             this.dataAccess = dataAccess;
             this.sessionValidator = sessionValidator;
         }
-
-        [HttpPost("")]
-        public ActionResult PostAuthenticateLibraryServer(LibraryAuthRequestModel model)
+        
+        [HttpGet("status")]
+        public ActionResult<StatusModel> GetStatus()
         {
-            var account = dataAccess.GetAccountByUserSecret(model.UserSecret);
-
-            if (account == null)
+            return new StatusModel
             {
-                return Unauthorized();
-            }
-
-            var serverAddress = Request.HttpContext.GetRemoteIPAddress(true).ToString();
-
-            if (serverAddress == "::1")
-            {
-                serverAddress = "localhost";
-            }
-
-            Log.Information("{user_ip}", serverAddress);
-
-            serverAddress = $"https://{serverAddress}:44362";
-
-            var lib = new AccountLibrary
-            {
-                LibraryId = Guid.NewGuid().ToString().Replace("-", string.Empty),
-                AccountId = account.AccountId,
-                ServerAddress = serverAddress,
-                DateAdded = DateTime.UtcNow,
-                LastActive = DateTime.UtcNow
+                NumSongs = songDictionary.Count,
+                LibrayLoadTime = SongLibrary.Default.libraryLoadMs
             };
-
-            dataAccess.AddLibrary(lib);
-
-            return NoContent();
         }
 
-        [HttpGet("")]
-        public ActionResult<AccountLibraryModel> GetLibrary()
+        [HttpGet("songs")]
+        public ActionResult<List<SongModel>> GetSongs(int page = 1, int size = 100)
         {
-            var sessionEntity = sessionValidator.GetRequestSession();
-            if (!sessionValidator.SessionIsValid(sessionEntity))
+            if (page < 1)
             {
-                return Unauthorized();
+                page = 1;
+            }
+            if (size < 1 || size > 1000)
+            {
+                size = 100;
             }
 
-            var library = dataAccess.GetLibrary(sessionEntity.AccountId);
+            return songDictionary.Skip((page - 1) * size).Take(size).Select(p => SongModel.FromSong(p.Value)).ToList();
+        }
 
-            return new AccountLibraryModel
-            {
-                LibraryId = library.LibraryId,
-                ServerAddress = library.ServerAddress
-            };
+        [HttpGet("song/{id}")]
+        public ActionResult<SongModel> GetSong(string id)
+        {
+            if (!songDictionary.ContainsKey(id))
+                return NotFound();
+            return SongModel.FromSong(songDictionary[id]);
+        }
+
+        [HttpGet("song/play")]
+        public IActionResult GetSongStream(string id, string sessionId = "")
+        {
+            if (!songDictionary.ContainsKey(id))
+                return NotFound();
+            var song = songDictionary[id];
+            var stream = new StreamReader(song.Path).BaseStream;
+            return File(stream, "audio/mpeg3", enableRangeProcessing: true);
         }
     }
 }

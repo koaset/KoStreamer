@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Streamer.API.Interfaces;
+using Streamer.API.Library;
 using Streamer.API.Services;
 using Streamer.API.Startup.Filters;
 using Streamer.API.Startup.Middleware;
@@ -24,6 +25,9 @@ namespace Streamer.API.Startup
             environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             Configuration = configuration;
             GoogleTokenHelper.Configure(configuration.GetValue<string>("GoogleAppId"));
+
+            var libraryFolders = configuration.GetSection("Library:Folders").Get<List<string>>();
+            SongLibrary.Default = new SongLibrary(libraryFolders);
         }
 
         public IConfiguration Configuration { get; }
@@ -38,9 +42,9 @@ namespace Streamer.API.Startup
                 {
                     var allowedOrigins = new List<string>();
 
-                    if (environment == "Local")
+                    if (environment == "Local" || environment == "Development")
                     {
-                        allowedOrigins.Add("http://local.player.koaset.com");
+                        builder.AllowAnyOrigin();
                     }
 
                     builder.WithOrigins(allowedOrigins.ToArray())
@@ -92,6 +96,7 @@ namespace Streamer.API.Startup
             app.UseCors(corsAllowedOriginsKey);
             app.UseMiddleware<RequestTimerStartMiddleware>();
             app.UseMiddleware<RequestResponseLoggingMiddleware>();
+            app.UseMiddleware<SessionValidationMiddleware>();
             app.UseMvc();
         }
     }

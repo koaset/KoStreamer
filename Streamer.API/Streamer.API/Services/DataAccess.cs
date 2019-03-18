@@ -212,54 +212,5 @@ namespace Streamer.API.Services
                 }
             }
         }
-
-        public void AddLibrary(AccountLibrary library)
-        {
-            using (var conn = new NpgsqlConnection(connectionString))
-            {
-                conn.Open();
-
-                using (var cmd = new NpgsqlCommand("INSERT INTO account_libraries VALUES (@library_id, @account_id, @server_address, @added, @last_active)", conn))
-                {
-                    cmd.Parameters.Add(new NpgsqlParameter("library_id", library.LibraryId));
-                    cmd.Parameters.Add(new NpgsqlParameter("account_id", library.AccountId));
-                    cmd.Parameters.Add(new NpgsqlParameter("server_address", library.ServerAddress));
-                    cmd.Parameters.Add(new NpgsqlParameter("added", library.DateAdded));
-                    cmd.Parameters.Add(new NpgsqlParameter("last_active", library.LastActive));
-                    cmd.ExecuteNonQuery();
-                }
-            }
-        }
-
-        public AccountLibrary GetLibrary(string accountId)
-        {
-            using (var conn = new NpgsqlConnection(connectionString))
-            {
-                conn.Open();
-
-                using (var cmd = new NpgsqlCommand($"SELECT library_id, account_id, server_address, added, last_active FROM account_libraries WHERE account_id=@account_id", conn))
-                {
-                    cmd.Parameters.Add(new NpgsqlParameter("account_id", accountId));
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            return new AccountLibrary
-                            {
-                                
-                                LibraryId = reader["library_id"].ToString(),
-                                AccountId = reader["account_id"].ToString(),
-                                ServerAddress = reader["server_address"].ToString(),
-                                DateAdded = ((DateTime)reader["added"]).ToUniversalTime(),
-                                LastActive = ((DateTime)reader["last_active"]).ToUniversalTime()
-                            };
-                        }
-                        return null;
-                    }
-
-                }
-            }
-        }
     }
 }

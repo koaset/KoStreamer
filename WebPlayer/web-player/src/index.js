@@ -8,7 +8,7 @@ import Progress from './componenets/progressbar';
 import './index.css';
 import GoogleLogin from 'react-google-login';
 
-var baseUrl = 'https://koaset.com/api';
+var baseUrl = 'https://dev.koaset.com/api';
 
 class Player extends React.Component {
   constructor(props) {
@@ -25,8 +25,7 @@ class Player extends React.Component {
       volume: 0.1,
       isPlaying: false,
       songProgress: 0,
-      loadError: null,
-      libraryUrl: null
+      loadError: null
     };
   }
 
@@ -37,11 +36,10 @@ class Player extends React.Component {
         if (storedLogin != null) {
           
           this.setState({
-            session: storedLogin.session,
-            libraryUrl: storedLogin.libraryUrl
+            session: storedLogin.session
           });
         }
-        this.fetchSongs(storedLogin.session, storedLogin.libraryUrl)
+        this.fetchSongs(storedLogin.session)
       }
       catch (error)
       {
@@ -73,15 +71,12 @@ class Player extends React.Component {
         (result) => {
           
           this.setState({
-            session: result.session,
-            libraryUrl: result.libraryAddress
+            session: result.session
           });
 
-          if (result.libraryAddress != null) {
-            this.fetchSongs();
-          }
+          this.fetchSongs();
 
-          localStorage.setItem('loginResult', JSON.stringify({ session: result.session, libraryUrl: this.state.libraryUrl }));
+          localStorage.setItem('loginResult', JSON.stringify({ session: result.session }));
         },
         (error) => {
           console.error('Error when logging in.', error);
@@ -89,34 +84,13 @@ class Player extends React.Component {
       );
     }
 
-    fetchLibraryUrl() {
-      const { session } = this.state;
+    fetchSongs(session) {
 
-      fetch(baseUrl + "/library", {
-        headers: {
-          'Accept': 'application/json',
-          'X-Session': session
-        }
-      })
-      .then(res => res.json())
-      .then(
-        (result) => {
-          this.setState({
-            libraryUrl: result.serverAddress
-          });
-        },
-        () => {
-      }).then(() => this.fetchSongs());
-    }
-
-    fetchSongs(session, libraryUrl) {
-
-      if (libraryUrl == null || session == null) {
-        libraryUrl = this.state.libraryUrl;
+      if (session == null) {
         session = this.state.session;
       }
 
-      fetch(libraryUrl + "/library/songs", {
+      fetch(baseUrl + "/library/songs", {
         headers: {
           'X-Session': session
         }
@@ -140,11 +114,11 @@ class Player extends React.Component {
     }
 
   render() {
-    const { isPlaying, volume, isLoaded, playingSong, loadError, session, libraryUrl } = this.state;
+    const { isPlaying, volume, isLoaded, playingSong, loadError, session } = this.state;
     var playPauseButton = this.playPauseButton();
     var volDownButton = <button className='control-button' onClick={() => this.setState({volume:Math.min(volume + 0.01, 1)})}>vol+</button>;
     var volUpButton = <button className='control-button' onClick={() => this.setState({volume:Math.max(volume - 0.01, 0)})}>vol-</button>;
-    var songUrl = isLoaded && playingSong != null ? libraryUrl + '/library/song/play?id=' + playingSong.id + '&sessionId=' +  session : null;
+    var songUrl = isLoaded && playingSong != null ? baseUrl + '/library/song/play?id=' + playingSong.id + '&sessionId=' +  session : null;
     var failedText = <div>{loadError == null ? "" : "Failed to load!"}</div>
 
     return (

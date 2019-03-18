@@ -6,9 +6,7 @@ services:
     build:
       context: ./WebPlayer/web-player
     ports:
-      - "3000:80"
-    environment:
-      STREAMER_API_URL: 'http://dev.player.koaset.com/api'
+      - "80:80"
 
   streamer.api:
     image: ${DOCKER_REGISTRY-}streamerapi
@@ -17,6 +15,7 @@ services:
     ports:
       - "8080:80"
     environment:
+      ASPNETCORE_ENVIRONMENT: 'Development'
       DATABASE_CONNECTIONSTRING: 'Server=database;Database=postgres;Port=5432;User Id=postgres;Password=docker;'
     depends_on:
       - database

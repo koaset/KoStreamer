@@ -11,7 +11,5 @@ namespace Streamer.API.Interfaces
         Session GetSession(string session);
         void AddSession(Session accountId);
         void InvalidateSession(string sessionId);
-        void AddLibrary(AccountLibrary library);
-        AccountLibrary GetLibrary(string accountId);
     }
 }

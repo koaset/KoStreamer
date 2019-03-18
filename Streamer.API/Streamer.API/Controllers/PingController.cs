@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 
 namespace Streamer.API.Controllers
 {
@@ -11,9 +10,7 @@ namespace Streamer.API.Controllers
         [HttpGet("")]
         public ActionResult<string> GetPing()
         {
-            var ip = Request.HttpContext.GetRemoteIPAddress(true);
-            var original = Request.Headers["X-Original-Forwarded-For"].FirstOrDefault();
-            return $"Hejdu... ip_with_true={ip} original={original}";
+            return $"Hejdu...";
         }
     }
 }
