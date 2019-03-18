@@ -43,6 +43,11 @@ namespace Streamer.API.Services
                 sessionId = GetSessionFromQuery();
             }
 
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                return null;
+            }
+
             return dataAccess.GetSession(sessionId);
         }
 

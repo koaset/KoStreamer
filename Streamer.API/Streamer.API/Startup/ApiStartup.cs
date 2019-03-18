@@ -94,6 +94,7 @@ namespace Streamer.API.Startup
             });
 
             app.UseCors(corsAllowedOriginsKey);
+
             app.UseMiddleware<RequestTimerStartMiddleware>();
             app.UseMiddleware<RequestResponseLoggingMiddleware>();
             app.UseMiddleware<SessionValidationMiddleware>();

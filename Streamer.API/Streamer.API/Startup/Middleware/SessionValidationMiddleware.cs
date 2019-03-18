@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Streamer.API.Interfaces;
 using System.Threading.Tasks;
 
@@ -17,7 +18,7 @@ namespace Streamer.API.Startup.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            if (context.Request.Path.Value.StartsWith("/ping"))
+            if (context.Request.Path.Value.StartsWith("/ping") || context.Request.Path.Value.Contains("/session"))
             {
                 await _next(context);
                 return;

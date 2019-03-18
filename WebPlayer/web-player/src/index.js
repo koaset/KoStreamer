@@ -8,7 +8,7 @@ import Progress from './componenets/progressbar';
 import './index.css';
 import GoogleLogin from 'react-google-login';
 
-var baseUrl = 'https://dev.koaset.com/api';
+var baseUrl = 'http://dev.koaset.com:8080';
 
 class Player extends React.Component {
   constructor(props) {

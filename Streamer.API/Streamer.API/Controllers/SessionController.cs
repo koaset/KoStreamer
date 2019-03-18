@@ -3,6 +3,7 @@ using Serilog;
 using Streamer.API.Entities;
 using Streamer.API.Interfaces;
 using Streamer.API.Models;
+using Streamer.API.Startup;
 using System;
 using System.Threading.Tasks;
 
@@ -36,8 +37,7 @@ namespace Streamer.API.Controllers
 
             if (account == null)
             {
-                return NotFound();
-                //account = CreateAccount(model, googleData);
+                account = CreateAccount(model, googleData);
             }
 
             var sessionEntity = CreateNewSession(account);
