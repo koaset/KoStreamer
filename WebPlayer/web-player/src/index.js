@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { BrowserRouter, Route } from 'react-router-dom';
 import ReactPlayer from 'react-player'
 import ReactTable from 'react-table'
 import "react-table/react-table.css";
@@ -7,7 +8,7 @@ import Progress from './componenets/progressbar';
 import './index.css';
 import GoogleLogin from 'react-google-login';
 
-var baseUrl = 'https://localhost:44361';
+var baseUrl = 'https://koaset.com/api';
 
 class Player extends React.Component {
   constructor(props) {
@@ -327,4 +328,8 @@ class Player extends React.Component {
 
 // ========================================
 
-ReactDOM.render(<Player/>, document.getElementById("root"));
+ReactDOM.render((
+  <BrowserRouter basename={'/player'}>
+    <Player/>
+  </BrowserRouter>
+), document.getElementById('root'));
