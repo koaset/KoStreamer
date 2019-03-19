@@ -32,23 +32,19 @@ class Player extends React.Component {
 
   componentDidMount() {
 
-      try {
-        var storedLogin = JSON.parse(localStorage.getItem('loginResult'));
-        if (storedLogin != null) {
-          
-          this.setState({
-            session: storedLogin.session
-          });
-        }
-        this.fetchSongs(storedLogin.session)
-      }
-      catch (error)
-      {
-        console.log('Error when reading stored login: ' + error);
-      }
+    var storedLogin = JSON.parse(localStorage.getItem('loginResult'));
 
-      this.setState({isLoaded:true});
+    if (storedLogin != null) {
+      
+      this.setState({
+        session: storedLogin.session
+      });
+
+      this.fetchSongs(storedLogin.session)
     }
+    
+    this.setState({isLoaded:true});
+  }
 
     signOut() {
       var auth2 = window.gapi.auth2.getAuthInstance();
@@ -96,7 +92,23 @@ class Player extends React.Component {
           'X-Session': session
         }
       })
-      .then(res => res.json())
+      .then(res => {
+        if (res.status === 401) {
+
+          localStorage.removeItem('loginResult');
+
+          this.setState({
+            songs: [],
+            isLoaded: true,
+            session: null,
+            loadError: null
+          });
+          
+          return;
+        }
+
+        return res.json();
+      })
       .then(
         (result) => {
           this.setState({
@@ -106,6 +118,7 @@ class Player extends React.Component {
           });
         },
         (error) => {
+          console.error(error);
           this.setState({
             songs: [],
             isLoaded: true,
@@ -122,7 +135,7 @@ class Player extends React.Component {
     var playPreviousButton = <button className='control-button' onClick={() => this.playPreviousSong()}>&lt;&lt;</button>;
     var playNextButton = <button className='control-button' onClick={() => this.playNextSong()}>>></button>;
     var songUrl = isLoaded && playingSong != null ? baseUrl + '/library/song/play?id=' + playingSong.id + '&sessionId=' +  session : null;
-    var failedText = <div>{loadError == null ? "" : "Failed to load!"}</div>
+    var failedText = <div>{loadError === null ? "" : "Failed to load!"}</div>
 
     return (
       <div>
