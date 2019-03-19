@@ -9,6 +9,5 @@ namespace Streamer.API.Entities
         public string Name { get; set; }
         public DateTime CreatedDate { get; set; }
         public string Email { get; set; }
-        public string UserSecret { get; set; }
     }
 }

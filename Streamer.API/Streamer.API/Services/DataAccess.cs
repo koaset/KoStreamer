@@ -37,28 +37,6 @@ namespace Streamer.API.Services
             }
         }
 
-        public Account GetAccountByUserSecret(string userSecret)
-        {
-            using (var conn = new NpgsqlConnection(connectionString))
-            {
-                conn.Open();
-
-                using (var cmd = new NpgsqlCommand($"SELECT {GetAccountDataFields} FROM accounts WHERE user_secret=@user_secret", conn))
-                {
-                    cmd.Parameters.Add(new NpgsqlParameter("user_secret", userSecret));
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            return ReadAccount(reader);
-                        }
-                        return null;
-                    }
-                }
-            }
-        }
-
         public bool IsAccountIdTaken(string id)
         {
             using (var conn = new NpgsqlConnection(connectionString))
@@ -132,7 +110,6 @@ namespace Streamer.API.Services
                     cmd.Parameters.Add(new NpgsqlParameter("email", account.Email));
                     cmd.Parameters.Add(new NpgsqlParameter("name", account.Name));
                     cmd.Parameters.Add(new NpgsqlParameter("created", account.CreatedDate));
-                    cmd.Parameters.Add(new NpgsqlParameter("user_secret", account.UserSecret));
                     cmd.ExecuteNonQuery();
                 }
             }
@@ -148,8 +125,7 @@ namespace Streamer.API.Services
                 GoogleId = reader["google_id"].ToString(),
                 Email = reader["email"].ToString(),
                 Name = reader["name"].ToString(),
-                CreatedDate = ((DateTime)reader["created"]).ToUniversalTime(),
-                UserSecret = reader["user_secret"].ToString()
+                CreatedDate = ((DateTime)reader["created"]).ToUniversalTime()
             };
         }
 

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Streamer.API.Interfaces;
 using Streamer.API.Library;
 using Streamer.API.Models;
 using System.Collections.Generic;
@@ -13,14 +12,11 @@ namespace Streamer.API.Controllers
     [ApiController]
     public class LibraryController : ControllerBase
     {
-        private readonly IDataAccess dataAccess;
-        private readonly ISessionValidator sessionValidator;
         private Dictionary<string, Song> songDictionary = SongLibrary.Default.songDictionary;
 
-        public LibraryController(IDataAccess dataAccess, ISessionValidator sessionValidator)
+        public LibraryController()
         {
-            this.dataAccess = dataAccess;
-            this.sessionValidator = sessionValidator;
+
         }
         
         [HttpGet("status")]

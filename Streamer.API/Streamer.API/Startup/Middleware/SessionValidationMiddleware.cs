@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Streamer.API.Interfaces;
 using System.Threading.Tasks;
 
@@ -8,9 +7,9 @@ namespace Streamer.API.Startup.Middleware
     public class SessionValidationMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ISessionValidator sessionValidator;
+        private readonly ISessionService sessionValidator;
 
-        public SessionValidationMiddleware(RequestDelegate next, ISessionValidator sessionValidator)
+        public SessionValidationMiddleware(RequestDelegate next, ISessionService sessionValidator)
         {
             _next = next;
             this.sessionValidator = sessionValidator;

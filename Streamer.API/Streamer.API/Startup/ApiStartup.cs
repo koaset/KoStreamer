@@ -55,7 +55,8 @@ namespace Streamer.API.Startup
 
             services.AddHttpContextAccessor();
             services.AddSingleton<IDataAccess, DataAccess>();
-            services.AddTransient<ISessionValidator, SessionValidator>();
+            services.AddTransient<ISessionService, SessionService>();
+            services.AddTransient<IAccountService, AccountService>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 

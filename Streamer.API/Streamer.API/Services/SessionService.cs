@@ -1,15 +1,16 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Streamer.API.Entities;
+using Streamer.API.Helpers;
 using Streamer.API.Interfaces;
 using System;
 
 namespace Streamer.API.Services
 {
-    public class SessionValidator : ISessionValidator
+    public class SessionService : ISessionService
     {
         private readonly IHttpContextAccessor httpContextAccessor;
 
-        public SessionValidator(IHttpContextAccessor httpContextAccessor)
+        public SessionService(IHttpContextAccessor httpContextAccessor)
         {
             this.httpContextAccessor = httpContextAccessor;
         }
@@ -67,6 +68,23 @@ namespace Streamer.API.Services
         {
             var request = httpContextAccessor.HttpContext.Request;
             return request.Query.TryGetValue("sessionId", out var sessionId) ? (string)sessionId : null;
+        }
+
+        public Session CreateNewSession(Account account)
+        {
+            var newSessionId = IdGenerationHelper.GetNewId((sessionId) => dataAccess.GetSession(sessionId) == null);
+
+            var entity = new Session
+            {
+                AccountId = account.AccountId,
+                SessionId = newSessionId,
+                CreatedDate = DateTime.UtcNow,
+                Invalidated = false
+            };
+
+            dataAccess.AddSession(entity);
+
+            return entity;
         }
     }
 }
