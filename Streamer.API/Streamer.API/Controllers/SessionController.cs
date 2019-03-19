@@ -34,7 +34,8 @@ namespace Streamer.API.Controllers
 
             if (account == null)
             {
-                account = accountService.CreateAccount(googleData);
+                return NotFound(); // New accounts disabled for now.
+                //account = accountService.CreateAccount(googleData);
             }
 
             var sessionEntity = sessionService.CreateNewSession(account);
