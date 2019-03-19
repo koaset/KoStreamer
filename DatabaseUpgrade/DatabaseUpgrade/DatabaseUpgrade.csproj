@@ -9,6 +9,7 @@
     <None Remove="Scripts\0001_Test.sql" />
     <None Remove="Scripts\0002_Create_account_table.sql" />
     <None Remove="Scripts\0003_Create_session_table.sql" />
+    <None Remove="Scripts\0004_Create_songs_table.sql" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Scripts\0004_Create_songs_table.sql" />
     <EmbeddedResource Include="Scripts\0003_Create_session_table.sql" />
     <EmbeddedResource Include="Scripts\0002_Create_account_table.sql" />
     <EmbeddedResource Include="Scripts\0001_Test.sql" />

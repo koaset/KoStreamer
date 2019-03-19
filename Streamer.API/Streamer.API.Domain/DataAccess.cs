@@ -2,6 +2,7 @@
 using Streamer.API.Domain.Entities;
 using Streamer.API.Domain.Interfaces;
 using System;
+using System.Collections.Generic;
 
 namespace Streamer.API.Domain
 {
@@ -184,6 +185,72 @@ namespace Streamer.API.Domain
                 using (var cmd = new NpgsqlCommand("UPDATE account_sessions SET invalidated=true WHERE session_id = @session_id", conn))
                 {
                     cmd.Parameters.Add(new NpgsqlParameter("session_id", sessionId));
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public List<Song> GetSongsForUser(Account userAccount)
+        {
+            using (var conn = new NpgsqlConnection(connectionString))
+            {
+                conn.Open();
+
+                using (var cmd = new NpgsqlCommand($"SELECT * FROM account_songs WHERE account_id=@account_id", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter("account_id", userAccount.AccountId));
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        var ret = new List<Song>();
+                        while (reader.Read())
+                        {
+                            ret.Add(new Song
+                            {
+                                Id = reader["song_id"].ToString(),
+                                Path = reader["path"].ToString(),
+                                DateAdded = ((DateTime)reader["added"]).ToUniversalTime(),
+                                Title = reader["title"].ToString(),
+                                Artist = reader["artist"].ToString(),
+                                Album = reader["album"].ToString(),
+                                Genre = reader["genre"].ToString(),
+                                TrackNumber = (int?)reader["track_number"],
+                                DiscNumber = (int?)reader["disc_number"],
+                                Rating = (int?)reader["rating"],
+                                DurationMs = (int)reader["duration_ms"],
+                                Md5Hash = reader["md5_hash"].ToString()
+                            });
+                        }
+                        return ret;
+                    }
+                }
+            }
+        }
+
+        public void AddSongForUser(Song song, Account userAccount)
+        {
+            using (var conn = new NpgsqlConnection(connectionString))
+            {
+                conn.Open();
+
+                using (var cmd = new NpgsqlCommand("INSERT INTO account_songs VALUES " +
+                    "(@song_id, @account_id, @path, @added, @title, @artist, @album, @genre, @track_number, @disc_number, @rating, @duration_ms, @md5_hash)", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter("song_id", song.Id));
+                    cmd.Parameters.Add(new NpgsqlParameter("account_id", userAccount.AccountId));
+                    cmd.Parameters.Add(new NpgsqlParameter("path", song.Path));
+                    cmd.Parameters.Add(new NpgsqlParameter("added", song.DateAdded));
+                    cmd.Parameters.Add(new NpgsqlParameter("title", song.Title));
+                    cmd.Parameters.Add(new NpgsqlParameter("artist", song.Artist));
+                    cmd.Parameters.Add(new NpgsqlParameter("album", song.Album));
+                    cmd.Parameters.Add(new NpgsqlParameter("genre", song.Genre));
+                    cmd.Parameters.Add(new NpgsqlParameter("track_number", song.TrackNumber));
+                    cmd.Parameters.Add(new NpgsqlParameter("disc_number", song.DiscNumber));
+                    cmd.Parameters.Add(new NpgsqlParameter("rating", song.Rating));
+                    cmd.Parameters.Add(new NpgsqlParameter("duration_ms", song.DurationMs));
+                    cmd.Parameters.Add(new NpgsqlParameter("duration_ms", song.DurationMs));
+                    cmd.Parameters.Add(new NpgsqlParameter("md5_hash", song.Md5Hash));
+
                     cmd.ExecuteNonQuery();
                 }
             }

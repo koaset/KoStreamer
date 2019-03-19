@@ -9,6 +9,7 @@ namespace Streamer.API.Domain
     public class SessionService : ISessionService
     {
         private readonly IHttpContextAccessor httpContextAccessor;
+        private Session RequestSessionCache;
 
         public SessionService(IHttpContextAccessor httpContextAccessor)
         {
@@ -37,6 +38,11 @@ namespace Streamer.API.Domain
 
         public Session GetRequestSession()
         {
+            if (RequestSessionCache != null)
+            {
+                return RequestSessionCache;
+            }
+
             var sessionId = httpContextAccessor.HttpContext.Request.GetSessionId();
 
             if (string.IsNullOrEmpty(sessionId))
@@ -44,7 +50,9 @@ namespace Streamer.API.Domain
                 return null;
             }
 
-            return dataAccess.GetSession(sessionId);
+            var dbValue = dataAccess.GetSession(sessionId);
+            RequestSessionCache = dbValue;
+            return dbValue;
         }
 
         public void DeleteSession()

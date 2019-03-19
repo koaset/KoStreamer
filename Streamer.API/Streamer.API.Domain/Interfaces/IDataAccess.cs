@@ -1,4 +1,5 @@
 ﻿using Streamer.API.Domain.Entities;
+using System.Collections.Generic;
 
 namespace Streamer.API.Domain.Interfaces
 {
@@ -10,5 +11,7 @@ namespace Streamer.API.Domain.Interfaces
         Session GetSession(string session);
         void AddSession(Session sessionEntity);
         void InvalidateSession(string sessionId);
+        List<Song> GetSongsForUser(Account userAccount);
+        void AddSongForUser(Song song, Account userAccount);
     }
 }

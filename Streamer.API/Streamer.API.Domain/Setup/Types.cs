@@ -11,6 +11,8 @@ namespace Streamer.API.Domain.Setup
             serviceCollection.AddSingleton<IDataAccess, DataAccess>();
             serviceCollection.AddTransient<ISessionService, SessionService>();
             serviceCollection.AddTransient<IAccountService, AccountService>();
+            serviceCollection.AddTransient<ILibraryService, LibraryService>();
+            serviceCollection.AddTransient(provider => provider.GetService<IAccountService>().GetAccountBySession());
         }
     }
 }

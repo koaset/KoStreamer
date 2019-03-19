@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Serilog;
+using System;
 
 namespace Streamer.API.Domain.Entities
 {
@@ -39,6 +40,8 @@ namespace Streamer.API.Domain.Entities
         public DateTime LastPlayed { get; set; }
         public string Id { get; set; }
         public string Format { get; internal set; }
+        public string AccountId { get; internal set; }
+        public string Md5Hash { get; set; }
 
         public Song()
         {
@@ -64,18 +67,31 @@ namespace Streamer.API.Domain.Entities
             Path = path;
         }
 
-        public static Song FromFile(string filePath)
+        public static Song FromFile(string filePath, string id = null)
         {
             var song = new Song
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = id ?? Guid.NewGuid().ToString(),
                 Path = filePath
             };
-            using (var track = TagLib.File.Create(filePath))
+
+            try
             {
-                song.ReadTags(track);
+                using (var track = TagLib.File.Create(filePath))
+                {
+                    song.ReadTags(track);
+                }
+                return song;
             }
-            return song;
+            catch (TagLib.UnsupportedFormatException)
+            {
+                Log.Error("{message}{reason}", "Error when reading song.", "Unsupported format");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "{message}", "Error when reading song.");
+            }
+            return null;
         }
 
         private void ReadTags(TagLib.File track)
@@ -102,6 +118,11 @@ namespace Streamer.API.Domain.Entities
             TrackNumber = (int)track.Tag.Track;
             DiscNumber = (int)track.Tag.Disc;
             Length = track.Properties.Duration;
+
+            if (Length.TotalMilliseconds == 0)
+            {
+                throw new Exception("Invalid format");
+            }
         }
     }
 }
