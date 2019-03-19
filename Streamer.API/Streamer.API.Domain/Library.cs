@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Streamer.API.Domain.Entities;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -6,17 +7,17 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Streamer.API.Library
+namespace Streamer.API.Domain
 {
-    public class SongLibrary
+    public class Library
     {
         public static string[] EXTENSIONS = { ".mp3", ".m4a", ".wma", ".aac", ".flac" };
-        public static SongLibrary Default;
+        public static Library Default;
         public long? libraryLoadMs;
         private readonly List<string> ConfiguredFolders;
         public Dictionary<string, Song> songDictionary { get; set; }
 
-        public SongLibrary(List<string> libraryFolders)
+        public Library(List<string> libraryFolders)
         {
             ConfiguredFolders = libraryFolders ?? new List<string>();
             if (songDictionary == null)
@@ -28,7 +29,7 @@ namespace Streamer.API.Library
             ReadFolders();
         }
 
-        public SongLibrary() : this(new List<string>())
+        public Library() : this(new List<string>())
         {
 
         }
@@ -56,7 +57,7 @@ namespace Streamer.API.Library
         private List<string> GetSongsPathsFromFolder(string folderPath)
         {
             var musicFiles = new List<string>();
-            foreach (var extension in SongLibrary.EXTENSIONS)
+            foreach (var extension in EXTENSIONS)
             {
                 musicFiles.AddRange(Directory.GetFiles(folderPath, "*" + extension, SearchOption.AllDirectories));
             }

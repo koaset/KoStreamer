@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Streamer.API.Interfaces;
+using Streamer.API.Domain;
+using Streamer.API.Domain.Interfaces;
 using Streamer.API.Models;
 using System.Threading.Tasks;
 

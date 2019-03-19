@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Streamer.API.Helpers
+namespace Streamer.API.Domain
 {
     public static class IdGenerationHelper
     {

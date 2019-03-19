@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Streamer.API.Entities
+namespace Streamer.API.Domain.Entities
 {
     public class Account
     {

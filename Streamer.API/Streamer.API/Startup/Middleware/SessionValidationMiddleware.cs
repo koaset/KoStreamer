@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Streamer.API.Interfaces;
+using Streamer.API.Domain.Interfaces;
 using System.Threading.Tasks;
 
 namespace Streamer.API.Startup.Middleware

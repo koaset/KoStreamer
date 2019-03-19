@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28010.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Streamer.API", "Streamer.API\Streamer.API.csproj", "{B62790F3-0F13-4908-8165-EED649FE060C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Streamer.API.Domain", "Streamer.API.Domain\Streamer.API.Domain.csproj", "{966ADBE1-25BC-4310-89EE-5A5B0DC857A0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,10 +17,10 @@ Global
 		{B62790F3-0F13-4908-8165-EED649FE060C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B62790F3-0F13-4908-8165-EED649FE060C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B62790F3-0F13-4908-8165-EED649FE060C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2B6FF173-49CF-499B-8C15-5DE49AE67A46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2B6FF173-49CF-499B-8C15-5DE49AE67A46}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2B6FF173-49CF-499B-8C15-5DE49AE67A46}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2B6FF173-49CF-499B-8C15-5DE49AE67A46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{966ADBE1-25BC-4310-89EE-5A5B0DC857A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{966ADBE1-25BC-4310-89EE-5A5B0DC857A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{966ADBE1-25BC-4310-89EE-5A5B0DC857A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{966ADBE1-25BC-4310-89EE-5A5B0DC857A0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

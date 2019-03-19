@@ -11,7 +11,7 @@ services:
   streamer.api:
     image: ${DOCKER_REGISTRY-}streamerapi
     build:
-      context: ./Streamer.API/Streamer.API
+      context: ./Streamer.API
     ports:
       - "8080:80"
     volumes:

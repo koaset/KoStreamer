@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Streamer.API.Library
+namespace Streamer.API.Domain.Entities
 {
     public class Song
     {

@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Streamer.API.Entities;
-using Streamer.API.Helpers;
-using Streamer.API.Interfaces;
+using Streamer.API.Domain.Entities;
+using Streamer.API.Domain.Interfaces;
 using System;
 
-namespace Streamer.API.Services
+namespace Streamer.API.Domain
 {
     public class SessionService : ISessionService
     {

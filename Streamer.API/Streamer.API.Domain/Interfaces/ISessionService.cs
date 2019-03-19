@@ -1,6 +1,6 @@
-﻿using Streamer.API.Entities;
+﻿using Streamer.API.Domain.Entities;
 
-namespace Streamer.API.Interfaces
+namespace Streamer.API.Domain.Interfaces
 {
     public interface ISessionService
     {

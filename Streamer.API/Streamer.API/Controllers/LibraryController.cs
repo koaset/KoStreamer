@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Streamer.API.Library;
+using Streamer.API.Domain;
+using Streamer.API.Domain.Entities;
 using Streamer.API.Models;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +13,7 @@ namespace Streamer.API.Controllers
     [ApiController]
     public class LibraryController : ControllerBase
     {
-        private Dictionary<string, Song> songDictionary = SongLibrary.Default.songDictionary;
+        private Dictionary<string, Song> songDictionary = Library.Default.songDictionary;
 
         public LibraryController()
         {
@@ -25,7 +26,7 @@ namespace Streamer.API.Controllers
             return new StatusModel
             {
                 NumSongs = songDictionary.Count,
-                LibrayLoadTime = SongLibrary.Default.libraryLoadMs
+                LibrayLoadTime = Library.Default.libraryLoadMs
             };
         }
 

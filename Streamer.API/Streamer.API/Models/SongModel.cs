@@ -1,4 +1,4 @@
-﻿using Streamer.API.Library;
+﻿using Streamer.API.Domain.Entities;
 
 namespace Streamer.API.Models
 {

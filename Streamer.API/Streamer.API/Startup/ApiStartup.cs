@@ -3,9 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Streamer.API.Interfaces;
-using Streamer.API.Library;
-using Streamer.API.Services;
+using Streamer.API.Domain;
 using Streamer.API.Startup.Filters;
 using Streamer.API.Startup.Middleware;
 using Swashbuckle.AspNetCore.Swagger;
@@ -24,10 +22,9 @@ namespace Streamer.API.Startup
         {
             environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             Configuration = configuration;
-            GoogleTokenHelper.Configure(configuration.GetValue<string>("GoogleAppId"));
 
             var libraryFolders = configuration.GetSection("Library:Folders").Get<List<string>>();
-            SongLibrary.Default = new SongLibrary(libraryFolders);
+            Library.Default = new Library(libraryFolders);
         }
 
         public IConfiguration Configuration { get; }
@@ -53,10 +50,7 @@ namespace Streamer.API.Startup
                 });
             });
 
-            services.AddHttpContextAccessor();
-            services.AddSingleton<IDataAccess, DataAccess>();
-            services.AddTransient<ISessionService, SessionService>();
-            services.AddTransient<IAccountService, AccountService>();
+            Domain.Setup.Types.Register(services);
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
