@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Streamer.API.Domain.Interfaces;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Streamer.API.Startup.Middleware
@@ -17,7 +18,8 @@ namespace Streamer.API.Startup.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            if (context.Request.Path.Value.StartsWith("/ping") || context.Request.Path.Value.Contains("/session"))
+            var routesWithNoValidation = new[] { "/ping", "/session" };
+            if (routesWithNoValidation.Any(route => context.Request.Path.Value.StartsWith(route)))
             {
                 await _next(context);
                 return;

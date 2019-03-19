@@ -48,14 +48,7 @@ namespace Streamer.API.Controllers
         [HttpGet("")]
         public ActionResult ValidateSession()
         {
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-            var isJNotValid = !sessionService.RequestSessionIsValid();
-            sw.Stop();
-            if (isJNotValid)
-            {
-                return Unauthorized();
-            }
-            return NoContent();
+            return sessionService.RequestSessionIsValid() ? (ActionResult)NoContent() : Unauthorized();
         }
 
         [HttpDelete("")]

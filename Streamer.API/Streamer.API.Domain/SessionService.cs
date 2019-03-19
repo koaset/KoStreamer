@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Streamer.API.Domain.Entities;
+using Streamer.API.Domain.Extensions;
 using Streamer.API.Domain.Interfaces;
 using System;
 
@@ -36,12 +37,7 @@ namespace Streamer.API.Domain
 
         public Session GetRequestSession()
         {
-            var sessionId = GetSessionFromHeader();
-
-            if (string.IsNullOrEmpty(sessionId))
-            {
-                sessionId = GetSessionFromQuery();
-            }
+            var sessionId = httpContextAccessor.HttpContext.Request.GetSessionId();
 
             if (string.IsNullOrEmpty(sessionId))
             {
@@ -53,20 +49,14 @@ namespace Streamer.API.Domain
 
         public void DeleteSession()
         {
-            var sessionId = GetSessionFromHeader();
+            var sessionId = httpContextAccessor.HttpContext.Request.GetSessionId();
+
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                return;
+            }
+
             dataAccess.InvalidateSession(sessionId);
-        }
-
-        private string GetSessionFromHeader()
-        {
-            var request = httpContextAccessor.HttpContext.Request;
-            return request.Headers.TryGetValue("X-Session", out var sessionId) ? (string)sessionId : null;
-        }
-
-        private string GetSessionFromQuery()
-        {
-            var request = httpContextAccessor.HttpContext.Request;
-            return request.Query.TryGetValue("sessionId", out var sessionId) ? (string)sessionId : null;
         }
 
         public Session CreateNewSession(Account account)
