@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter, Route } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import ReactPlayer from 'react-player'
 import ReactTable from 'react-table'
 import "react-table/react-table.css";
@@ -8,12 +8,13 @@ import Progress from './componenets/progressbar';
 import './index.css';
 import GoogleLogin from 'react-google-login';
 
-var baseUrl = 'http://dev.koaset.com:8080';
+var baseUrl = 'https://localhost:44361';
 
 class Player extends React.Component {
   constructor(props) {
     super(props);
     this.player = React.createRef();
+    this.songTable = React.createRef();
     this.progressBar = React.createRef();
     this.state = {
       session: null,
@@ -118,6 +119,8 @@ class Player extends React.Component {
     var playPauseButton = this.playPauseButton();
     var volDownButton = <button className='control-button' onClick={() => this.setState({volume:Math.min(volume + 0.01, 1)})}>vol+</button>;
     var volUpButton = <button className='control-button' onClick={() => this.setState({volume:Math.max(volume - 0.01, 0)})}>vol-</button>;
+    var playPreviousButton = <button className='control-button' onClick={() => this.playPreviousSong()}>&lt;&lt;</button>;
+    var playNextButton = <button className='control-button' onClick={() => this.playNextSong()}>>></button>;
     var songUrl = isLoaded && playingSong != null ? baseUrl + '/library/song/play?id=' + playingSong.id + '&sessionId=' +  session : null;
     var failedText = <div>{loadError == null ? "" : "Failed to load!"}</div>
 
@@ -125,9 +128,11 @@ class Player extends React.Component {
       <div>
         <div className='menu-bar'>
           <div className='control-buttons'>
+            {playPreviousButton}
             {playPauseButton}
             {volDownButton}
             {volUpButton}
+            {playNextButton}
           </div>
           {<GoogleLogin
             className='login-button'
@@ -152,6 +157,7 @@ class Player extends React.Component {
           progressInterval={50}
           loop={false}
           onProgress={o => this.onProgress(o)}
+          onEnded={() => this.playNextSong()}
         />}
         {this.progressBarRender()}
       </div>
@@ -206,6 +212,10 @@ class Player extends React.Component {
     }>play/pause</button>
   }
 
+  playOrPause(){
+    this.setState({isPlaying:!this.state.isPlaying});
+  }
+
   pauseSong() {
     this.setState({isPlaying:false});
   }
@@ -213,6 +223,40 @@ class Player extends React.Component {
   playSong(s) {
     this.setState({
       playingSong: s,
+      isPlaying: true
+    });
+  }
+
+  playNextSong() {
+    const currentSong = this.state.playingSong;
+    const songs = this.songTable.current.resolvedData;
+
+    var nextIndex = 0;
+    if (currentSong !== null)
+    {
+      var rowIndex = songs.findIndex((element) => {return element.id === currentSong.id});
+      nextIndex = ++rowIndex < songs.length ? rowIndex : 0;
+    }
+
+    this.setState({
+      playingSong: songs[nextIndex],
+      isPlaying: true
+    });
+  }
+
+  playPreviousSong() {
+    const currentSong = this.state.playingSong;
+    const songs = this.songTable.current.resolvedData;
+
+    var previousIndex = songs.length - 1;
+    if (currentSong !== null)
+    {
+      var rowIndex = songs.findIndex((element) => {return element.id === currentSong.id});
+      previousIndex = --rowIndex >= 0 ? rowIndex : songs.length - 1;
+    }
+
+    this.setState({
+      playingSong: songs[previousIndex],
       isPlaying: true
     });
   }
@@ -225,6 +269,7 @@ class Player extends React.Component {
       return <div>Loading...</div>;
     } else {
         return <ReactTable
+        ref={this.songTable}
         data={songs}
         columns={[
           {
