@@ -104,7 +104,7 @@ namespace Streamer.API.Domain
             {
                 conn.Open();
 
-                using (var cmd = new NpgsqlCommand("INSERT INTO accounts VALUES (@account_id, @google_id, @email, @name, @created, @user_secret)", conn))
+                using (var cmd = new NpgsqlCommand("INSERT INTO accounts VALUES (@account_id, @google_id, @email, @name, @created)", conn))
                 {
                     cmd.Parameters.Add(new NpgsqlParameter("account_id", account.AccountId));
                     cmd.Parameters.Add(new NpgsqlParameter("google_id", account.GoogleId));
@@ -116,7 +116,7 @@ namespace Streamer.API.Domain
             }
         }
 
-        private string GetAccountDataFields =>  "account_id, google_id, email, name, created, user_secret";
+        private string GetAccountDataFields =>  "account_id, google_id, email, name, created";
 
         private Account ReadAccount(NpgsqlDataReader reader)
         {
