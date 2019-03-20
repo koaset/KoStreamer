@@ -56,10 +56,10 @@ namespace Streamer.API.Controllers
         }
 
         [HttpPost("song/upload")]
-        public async Task<IActionResult> PostUploadSong(IFormFile file)
+        public async Task<IActionResult> PostUploadSong(IFormFile qqfile)
         {
-            var addSongResult = await libraryService.AddSongAsync(file);
-            
+            var addSongResult = await libraryService.AddSongAsync(qqfile);
+
             if (!addSongResult.Success)
             {
                 return BadRequest(addSongResult);

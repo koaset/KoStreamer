@@ -8,6 +8,10 @@ import Progress from './componenets/progressbar';
 import './index.css';
 import GoogleLogin from 'react-google-login';
 
+import FineUploaderTraditional from 'fine-uploader-wrappers'
+import Gallery from 'react-fine-uploader'
+import 'react-fine-uploader/gallery/gallery.css'
+
 var baseUrl = 'https://localhost:44361';
 
 class Player extends React.Component {
@@ -46,86 +50,86 @@ class Player extends React.Component {
     this.setState({isLoaded:true});
   }
 
-    signOut() {
-      var auth2 = window.gapi.auth2.getAuthInstance();
-      auth2.signOut().then(() => {
-        this.setState({session: null});
-        window.location.reload();
-      });
-    }
+  signOut() {
+    var auth2 = window.gapi.auth2.getAuthInstance();
+    auth2.signOut().then(() => {
+      this.setState({session: null});
+      window.location.reload();
+    });
+  }
   
-    onSignIn(idToken) {
-      fetch(baseUrl + "/session/googleAuth", {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({IdToken: idToken})
-      })
-      .then(res => res.json())
-      .then(
-        (result) => {
-          
-          this.setState({
-            session: result.session
-          });
+  onSignIn(idToken) {
+    fetch(baseUrl + "/session/googleAuth", {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({IdToken: idToken})
+    })
+    .then(res => res.json())
+    .then(
+      (result) => {
+        
+        this.setState({
+          session: result.session
+        });
 
-          this.fetchSongs();
+        this.fetchSongs();
 
-          localStorage.setItem('loginResult', JSON.stringify({ session: result.session }));
-        },
-        (error) => {
-          console.error('Error when logging in.', error);
-        }
-      );
+        localStorage.setItem('loginResult', JSON.stringify({ session: result.session }));
+      },
+      (error) => {
+        console.error('Error when logging in.', error);
+      }
+    );
+  }
+
+  fetchSongs(session) {
+
+    if (session == null) {
+      session = this.state.session;
     }
 
-    fetchSongs(session) {
+    fetch(baseUrl + "/library/songs", {
+      headers: {
+        'X-Session': session
+      }
+    })
+    .then(res => {
+      if (res.status === 401) {
 
-      if (session == null) {
-        session = this.state.session;
+        localStorage.removeItem('loginResult');
+
+        this.setState({
+          songs: [],
+          isLoaded: true,
+          session: null,
+          loadError: null
+        });
+
+        return;
       }
 
-      fetch(baseUrl + "/library/songs", {
-        headers: {
-          'X-Session': session
-        }
-      })
-      .then(res => {
-        if (res.status === 401) {
-
-          localStorage.removeItem('loginResult');
-
-          this.setState({
-            songs: [],
-            isLoaded: true,
-            session: null,
-            loadError: null
-          });
-          
-          return;
-        }
-
-        return res.json();
-      })
-      .then(
-        (result) => {
-          this.setState({
-            songs: result,
-            isLoaded: true,
-            loadError: null
-          });
-        },
-        (error) => {
-          console.error(error);
-          this.setState({
-            songs: [],
-            isLoaded: true,
-            loadError: error
+      return res.json();
+    })
+    .then(
+      (result) => {
+        this.setState({
+          songs: result,
+          isLoaded: true,
+          loadError: null
         });
+      },
+      (error) => {
+        console.error(error);
+        this.setState({
+          songs: [],
+          isLoaded: true,
+          loadError: error
       });
-    }
+    });
+  }
 
   render() {
     const { isPlaying, volume, isLoaded, playingSong, loadError, session } = this.state;
@@ -173,6 +177,7 @@ class Player extends React.Component {
           onEnded={() => this.playNextSong()}
         />}
         {this.progressBarRender()}
+        {<Gallery uploader={ this.uploader() } />}
       </div>
     );
   }
@@ -271,6 +276,31 @@ class Player extends React.Component {
     this.setState({
       playingSong: songs[previousIndex],
       isPlaying: true
+    });
+  }
+
+  uploader() {
+    const session = this.state.session;
+    return new FineUploaderTraditional({
+      options: {
+          chunking: {
+              enabled: false
+          },
+          deleteFile: {
+              enabled: false,
+              endpoint: '/uploads'
+          },
+          request: {
+              endpoint: baseUrl + '/library/song/upload',
+              customHeaders: {
+                "X-Session": session
+              }
+          },
+          retry: {
+              enableAuto: false
+          }
+          
+      }
     });
   }
 

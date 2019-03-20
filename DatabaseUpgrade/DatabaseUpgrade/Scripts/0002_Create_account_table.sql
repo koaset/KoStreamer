@@ -3,6 +3,5 @@ create table accounts (
 	google_id varchar(100) unique,
 	email varchar(100) NOT NULL,
 	name varchar(100) NOT NULL,
-	created timestamp NOT NULL,
-	user_secret varchar(100)
+	created timestamp NOT NULL
 )

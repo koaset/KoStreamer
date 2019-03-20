@@ -9,7 +9,6 @@ namespace Streamer.API.Domain
     {
         private readonly IDataAccess dataAccess;
         private readonly ISessionService sessionService;
-        private Account CachedAccount;
 
         public AccountService(IDataAccess dataAccess, ISessionService sessionService)
         {
@@ -32,35 +31,23 @@ namespace Streamer.API.Domain
 
             dataAccess.AddNewAccount(account);
             Log.Information($"Added new account. id={account.AccountId}");
-            CachedAccount = account;
             return account;
         }
 
         public Account GetAccountByAccountId(string accountId)
         {
-            if (CachedAccount?.AccountId == accountId)
-            {
-                return CachedAccount;
-            }
-
             return dataAccess.GetAccountById(accountId);
         }
 
         public Account GetAccountByGoogleId(string googleId)
         {
-            if (CachedAccount?.GoogleId == googleId)
-            {
-                return CachedAccount;
-            }
-
             return dataAccess.GetAccountByGoogleId(googleId);
         }
 
         public Account GetAccountBySession()
         {
             var session = sessionService.GetRequestSession();
-            CachedAccount = GetAccountByAccountId(session.AccountId);
-            return CachedAccount;
+            return GetAccountByAccountId(session.AccountId);
         }
     }
 }
