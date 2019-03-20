@@ -218,7 +218,8 @@ namespace Streamer.API.Domain
                                 DiscNumber = (int?)reader["disc_number"],
                                 Rating = (int?)reader["rating"],
                                 DurationMs = (int)reader["duration_ms"],
-                                Md5Hash = reader["md5_hash"].ToString()
+                                Md5Hash = reader["md5_hash"].ToString(),
+                                SizeBytes = (long)reader["size_bytes"]
                             });
                         }
                         return ret;
@@ -234,7 +235,7 @@ namespace Streamer.API.Domain
                 conn.Open();
 
                 using (var cmd = new NpgsqlCommand("INSERT INTO account_songs VALUES " +
-                    "(@song_id, @account_id, @path, @added, @title, @artist, @album, @genre, @track_number, @disc_number, @rating, @duration_ms, @md5_hash)", conn))
+                    "(@song_id, @account_id, @path, @added, @title, @artist, @album, @genre, @track_number, @disc_number, @rating, @duration_ms, @md5_hash, @size_bytes)", conn))
                 {
                     cmd.Parameters.Add(new NpgsqlParameter("song_id", song.Id));
                     cmd.Parameters.Add(new NpgsqlParameter("account_id", userAccount.AccountId));
@@ -250,8 +251,46 @@ namespace Streamer.API.Domain
                     cmd.Parameters.Add(new NpgsqlParameter("duration_ms", song.DurationMs));
                     cmd.Parameters.Add(new NpgsqlParameter("duration_ms", song.DurationMs));
                     cmd.Parameters.Add(new NpgsqlParameter("md5_hash", song.Md5Hash));
+                    cmd.Parameters.Add(new NpgsqlParameter("size_bytes", song.SizeBytes));
 
                     cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public Song GetSongByMd5HashForUser(string md5Hash, Account userAccount)
+        {
+            using (var conn = new NpgsqlConnection(connectionString))
+            {
+                conn.Open();
+
+                using (var cmd = new NpgsqlCommand($"SELECT * FROM account_songs WHERE account_id=@account_id AND md5_hash=@md5_hash limit 1", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter("account_id", userAccount.AccountId));
+                    cmd.Parameters.Add(new NpgsqlParameter("md5_hash", md5Hash));
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new Song
+                            {
+                                Id = reader["song_id"].ToString(),
+                                Path = reader["path"].ToString(),
+                                DateAdded = ((DateTime)reader["added"]).ToUniversalTime(),
+                                Title = reader["title"].ToString(),
+                                Artist = reader["artist"].ToString(),
+                                Album = reader["album"].ToString(),
+                                Genre = reader["genre"].ToString(),
+                                TrackNumber = (int?)reader["track_number"],
+                                DiscNumber = (int?)reader["disc_number"],
+                                Rating = (int?)reader["rating"],
+                                DurationMs = (int)reader["duration_ms"],
+                                Md5Hash = reader["md5_hash"].ToString()
+                            };
+                        }
+                        return null;
+                    }
                 }
             }
         }

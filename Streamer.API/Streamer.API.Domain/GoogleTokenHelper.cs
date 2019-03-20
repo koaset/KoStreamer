@@ -1,19 +1,20 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Streamer.API.Domain.Entities;
+using Streamer.API.Domain.Interfaces;
 using System.Threading.Tasks;
 
 namespace Streamer.API.Domain
 {
-    public class GoogleTokenHelper 
+    public class GoogleTokenHelper : IGoogleTokenHelper
     {
-        private static string streamerAppId;
+        private readonly string streamerAppId;
 
         public GoogleTokenHelper(IConfiguration configuration)
         {
             streamerAppId = configuration.GetValue<string>("GoogleAppId");
         }
 
-        public static async Task<GoogleUserData> ValidateGoogleTokenAndGetUserData(string token)
+        public async Task<GoogleUserData> ValidateGoogleTokenAndGetUserDataAsync(string token)
         {
             try
             {

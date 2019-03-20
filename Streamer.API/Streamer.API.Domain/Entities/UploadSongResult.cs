@@ -1,4 +1,4 @@
-﻿namespace Streamer.API.Models
+﻿namespace Streamer.API.Domain.Entities
 {
     public class UploadSongResult
     {

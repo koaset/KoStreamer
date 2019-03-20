@@ -13,5 +13,6 @@ namespace Streamer.API.Domain.Interfaces
         void InvalidateSession(string sessionId);
         List<Song> GetSongsForUser(Account userAccount);
         void AddSongForUser(Song song, Account userAccount);
+        Song GetSongByMd5HashForUser(string md5Hash, Account userAccount);
     }
 }

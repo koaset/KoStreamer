@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Streamer.API.Domain;
 using Streamer.API.Domain.Interfaces;
 using Streamer.API.Models;
 using System.Threading.Tasks;
@@ -13,17 +12,19 @@ namespace Streamer.API.Controllers
     {
         private readonly IAccountService accountService;
         private readonly ISessionService sessionService;
+        private readonly IGoogleTokenHelper googleHelper;
 
-        public SessionController(IAccountService accountService, ISessionService sessionService)
+        public SessionController(IAccountService accountService, ISessionService sessionService, IGoogleTokenHelper googleHelper)
         {
             this.accountService = accountService;
             this.sessionService = sessionService;
+            this.googleHelper = googleHelper;
         }
 
         [HttpPost("googleAuth")]
         public async Task<ActionResult<LoginResponseModel>> PostGoogleLogin(GoogleLoginRequestModel model)
         {
-            var googleData = await GoogleTokenHelper.ValidateGoogleTokenAndGetUserData(model.IdToken);
+            var googleData = await googleHelper.ValidateGoogleTokenAndGetUserDataAsync(model.IdToken);
 
             if (googleData == null)
             {

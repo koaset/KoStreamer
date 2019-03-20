@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Streamer.API.Domain;
 using Streamer.API.Startup.Filters;
 using Streamer.API.Startup.Middleware;
 using Swashbuckle.AspNetCore.Swagger;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
@@ -16,19 +13,6 @@ namespace Streamer.API.Startup
 {
     public class ApiStartup
     {
-        private readonly string environment;
-
-        public ApiStartup(IConfiguration configuration)
-        {
-            environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-            Configuration = configuration;
-
-            var libraryFolders = configuration.GetSection("Library:Folders").Get<List<string>>();
-            Library.Default = new Library(libraryFolders);
-        }
-
-        public IConfiguration Configuration { get; }
-
         private readonly string corsAllowedOriginsKey = "AllowMyOrigin";
 
         public void ConfigureServices(IServiceCollection services)
@@ -37,16 +21,14 @@ namespace Streamer.API.Startup
             {
                 options.AddPolicy(corsAllowedOriginsKey, builder =>
                 {
-                    var allowedOrigins = new List<string>();
-
+                    var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
                     if (environment == "Local" || environment == "Development")
                     {
-                        builder.AllowAnyOrigin();
+                        builder
+                        .AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
                     }
-
-                    builder.WithOrigins(allowedOrigins.ToArray())
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
                 });
             });
 
@@ -54,7 +36,6 @@ namespace Streamer.API.Startup
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            // Swagger
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new Info {
@@ -87,7 +68,7 @@ namespace Streamer.API.Startup
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
             });
-
+            
             app.UseCors(corsAllowedOriginsKey);
 
             app.UseMiddleware<RequestTimerStartMiddleware>();

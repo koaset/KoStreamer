@@ -9,6 +9,7 @@ namespace Streamer.API.Domain.Setup
         {
             serviceCollection.AddHttpContextAccessor();
             serviceCollection.AddSingleton<IDataAccess, DataAccess>();
+            serviceCollection.AddTransient<IGoogleTokenHelper, GoogleTokenHelper>();
             serviceCollection.AddTransient<ISessionService, SessionService>();
             serviceCollection.AddTransient<IAccountService, AccountService>();
             serviceCollection.AddTransient<ILibraryService, LibraryService>();

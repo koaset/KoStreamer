@@ -42,6 +42,7 @@ namespace Streamer.API.Domain.Entities
         public string Format { get; internal set; }
         public string AccountId { get; internal set; }
         public string Md5Hash { get; set; }
+        public long SizeBytes { get; set; }
 
         public Song()
         {

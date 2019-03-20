@@ -11,5 +11,6 @@ create table account_songs (
 	disc_number int,
 	rating int,
 	duration_ms int,
-	md5_hash varchar(100)
+	md5_hash varchar(100),
+    size_bytes bigint
 )
