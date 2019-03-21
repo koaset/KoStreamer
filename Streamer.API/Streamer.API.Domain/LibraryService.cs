@@ -38,16 +38,15 @@ namespace Streamer.API.Domain
             return dataAccess.GetSongsForUser(userAccount);
         }
 
-        public async Task<UploadSongResult> AddSongAsync(IFormFile file)
+        public async Task<UploadSongResult> AddSongAsync(MemoryStream stream, string fileName)
         {
             // Check user allowed to add size
 
-            var extension = GetFileExtension(file);
+            var extension = GetFileExtension(fileName);
 
             if (extension == null || !AllowedExtensions.Contains(extension))
             {
-                // TODO: Check content type
-                return new UploadSongResult { File = file.FileName };
+                return new UploadSongResult { File = fileName };
             }
 
             var userDirectoryPath = UserLibraryPath();
@@ -57,28 +56,29 @@ namespace Streamer.API.Domain
             var filePath = $"{userDirectoryPath}{Path.DirectorySeparatorChar}{songId}{extension}";
 
             string md5Hash;
+            long streamLength = stream.Length;
 
-            using (var memoryStream = new MemoryStream())
+            using (stream)
             {
-                await file.CopyToAsync(memoryStream);
-                memoryStream.Position = 0;
+
+                stream.Position = 0;
 
                 using (var md5 = MD5.Create())
                 {
-                    md5Hash = GetStringFromMd5Bytes(md5.ComputeHash(memoryStream));
+                    md5Hash = GetStringFromMd5Bytes(md5.ComputeHash(stream));
                 }
 
                 var songExists = dataAccess.GetSongByMd5HashForUser(md5Hash, userAccount) != null;
 
                 if (songExists)
                 {
-                    return new UploadSongResult { File = file.FileName };
+                    return new UploadSongResult { File = fileName };
                 }
 
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
-                    memoryStream.Position = 0;
-                    await memoryStream.CopyToAsync(fileStream);
+                    stream.Position = 0;
+                    await stream.CopyToAsync(fileStream);
                 }
             }
 
@@ -87,20 +87,20 @@ namespace Streamer.API.Domain
             if (song == null)
             {
                 File.Delete(filePath);
-                return new UploadSongResult { File = file.FileName };
+                return new UploadSongResult { File = fileName };
             }
 
             song.Md5Hash = md5Hash;
-            song.SizeBytes = file.Length;
+            song.SizeBytes = streamLength;
 
             AddSongToUserLibrary(song);
 
-            return new UploadSongResult { File = file.FileName, Success = true, Id = song.Id };
+            return new UploadSongResult { File = fileName, Success = true, Song = song };
         }
 
-        private static string GetFileExtension(IFormFile file)
+        private static string GetFileExtension(string fileName)
         {
-            var split = file.FileName.Split('.');
+            var split = fileName.Split('.');
 
             if (split.Count() == 0)
             {

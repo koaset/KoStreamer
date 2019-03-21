@@ -6,11 +6,13 @@ import ReactTable from 'react-table'
 import "react-table/react-table.css";
 import Progress from './componenets/progressbar';
 import './index.css';
+
 import GoogleLogin from 'react-google-login';
 
 import FineUploaderTraditional from 'fine-uploader-wrappers'
 import Gallery from 'react-fine-uploader'
 import 'react-fine-uploader/gallery/gallery.css'
+
 
 var baseUrl = 'https://localhost:44361';
 
@@ -30,7 +32,8 @@ class Player extends React.Component {
       volume: 0.1,
       isPlaying: false,
       songProgress: 0,
-      loadError: null
+      loadError: null,
+      orientation : null
     };
   }
 
@@ -204,8 +207,7 @@ class Player extends React.Component {
     if (playingSong == null)
       return;
     const player = this.player.current;
-    const progressBar = this.progressBar.current;
-    var percent = this.clampNumber(a.pageX/progressBar.state.width, 0, 1);
+        var percent = this.clampNumber(a.pageX / window.innerWidth, 0, 1);
     player.seekTo(percent);
   }
 
@@ -284,7 +286,10 @@ class Player extends React.Component {
     return new FineUploaderTraditional({
       options: {
           chunking: {
-              enabled: false
+              enabled: true,
+              success: {
+                endpoint: baseUrl + '/library/song/upload/complete'
+              }
           },
           deleteFile: {
               enabled: false,
@@ -298,9 +303,27 @@ class Player extends React.Component {
           },
           retry: {
               enableAuto: false
+          },
+          callbacks: {
+            onComplete: (_, __, response) => this.onUploadComplete(response)
           }
-          
       }
+    });
+  }
+
+  onUploadComplete(response) {
+    if (!response.success)
+    {
+      return;
+    }
+    
+    var song = response.song;
+
+    var newSongs = this.state.songs.slice();    
+    newSongs.push(song);  
+
+    this.setState({
+      songs: newSongs
     });
   }
 
