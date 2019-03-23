@@ -15,6 +15,8 @@ class SongTable extends Component {
       {
         ({ height, width }) => (
           <Table
+            className='song-table'
+            gridStyle={{outline:"0px"}}
             width={width}
             height={height - 60}
             headerHeight={20}
@@ -28,7 +30,10 @@ class SongTable extends Component {
                 var color = "#f5f5f5";
                 if ((index % 2) === 0)
                   color = "#ffffff";
-                return {backgroundColor: color};
+                return {
+                  backgroundColor: color,
+                  outline: "0px"
+                };
               }
             }
           >

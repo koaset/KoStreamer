@@ -34,7 +34,8 @@ body {
 
 .login-button {
   float: right;
-  height: 50px;
+  height: 48px;
+  box-shadow: 0px 0px !important;
 }
 
 .search-bar {
