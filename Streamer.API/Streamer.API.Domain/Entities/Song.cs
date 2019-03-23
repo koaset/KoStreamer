@@ -1,5 +1,6 @@
 ﻿using Serilog;
 using System;
+using System.IO;
 
 namespace Streamer.API.Domain.Entities
 {
@@ -124,6 +125,23 @@ namespace Streamer.API.Domain.Entities
             {
                 throw new Exception("Invalid format");
             }
+        }
+
+        public ImageData GetImageData()
+        {
+            using (var track = TagLib.File.Create(Path))
+            {
+                if (track.Tag.Pictures.Length > 0)
+                {
+                    return new ImageData
+                    {
+                        Bytes = track.Tag.Pictures[0].Data.Data,
+                        MimeType = track.Tag.Pictures[0].MimeType
+                    };
+                }
+            }
+
+            return null;
         }
     }
 }

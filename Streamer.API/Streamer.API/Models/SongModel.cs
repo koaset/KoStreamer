@@ -1,4 +1,5 @@
 ﻿using Streamer.API.Domain.Entities;
+using System;
 
 namespace Streamer.API.Models
 {
@@ -21,9 +22,13 @@ namespace Streamer.API.Models
         public int? Rating { get; set; }
         public string LengthString { get; set; }
         public int DurationMs { get; set; }
+        public string Art { get; set; }
+        public string ArtMimeType { get; set; }
 
         public static SongModel FromSong(Song song)
         {
+            var imageData = song.GetImageData();
+
             return new SongModel
             {
                 Id = song.Id,
@@ -35,7 +40,9 @@ namespace Streamer.API.Models
                 DiscNumber = song.DiscNumber,
                 Rating = song.Rating,
                 LengthString = song.LengthString,
-                DurationMs = song.DurationMs
+                DurationMs = song.DurationMs,
+                Art = imageData != null ? Convert.ToBase64String(imageData.Bytes) : null,
+                ArtMimeType = imageData?.MimeType
             };
         }
     }

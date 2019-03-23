@@ -2,8 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 import ReactPlayer from 'react-player'
-import ReactTable from 'react-table'
-import "react-table/react-table.css";
 import Progress from './componenets/progressbar';
 import './index.css';
 
@@ -13,6 +11,9 @@ import FineUploaderTraditional from 'fine-uploader-wrappers'
 import Gallery from 'react-fine-uploader'
 import 'react-fine-uploader/gallery/gallery.css'
 
+import Modal from 'react-modal';
+import 'react-virtualized/styles.css'
+import { List } from 'react-virtualized'
 
 var baseUrl = 'https://localhost:44361';
 
@@ -33,7 +34,8 @@ class Player extends React.Component {
       isPlaying: false,
       songProgress: 0,
       loadError: null,
-      orientation : null
+      orientation : null,
+      modalIsOpen: false
     };
   }
 
@@ -144,6 +146,8 @@ class Player extends React.Component {
     var songUrl = isLoaded && playingSong != null ? baseUrl + '/library/song/play?id=' + playingSong.id + '&sessionId=' +  session : null;
     var failedText = <div>{loadError === null ? "" : "Failed to load!"}</div>
 
+    var uploadButton = <button className='control-button' onClick={() => this.setState({modalIsOpen:true})}>upload</button>;
+
     return (
       <div>
         <div className='menu-bar'>
@@ -153,6 +157,7 @@ class Player extends React.Component {
             {volDownButton}
             {volUpButton}
             {playNextButton}
+            {uploadButton}
           </div>
           {<GoogleLogin
             className='login-button'
@@ -161,9 +166,9 @@ class Player extends React.Component {
             onSuccess={(r) => this.onSignIn(r.tokenObj.id_token)}
             onFailure={() =>{}}
           />}
-          <div className='now-playing'>{playingSong === null ? ' ' : playingSong.title + ' - ' +  playingSong.artist}</div>
+          <div className='now-playing'>{this.getNowPlayingString(playingSong)}</div>
         </div>
-        
+        {this.progressBarRender()}
         {this.songList()}
         {failedText}
         {<ReactPlayer
@@ -179,10 +184,20 @@ class Player extends React.Component {
           onProgress={o => this.onProgress(o)}
           onEnded={() => this.playNextSong()}
         />}
-        {this.progressBarRender()}
-        {<Gallery uploader={ this.uploader() } />}
+        {this.uploadModal()}
       </div>
     );
+  }
+
+  getNowPlayingString(playingSong) {
+    var nowPlayingString = '';
+    if (playingSong !== null)
+    {
+      nowPlayingString = playingSong.title;
+      if (playingSong.artist && playingSong.artist !== '')
+        nowPlayingString += ' - ' + playingSong.artist;
+    }
+    return nowPlayingString;
   }
 
   progressBarRender() {
@@ -207,7 +222,7 @@ class Player extends React.Component {
     if (playingSong == null)
       return;
     const player = this.player.current;
-        var percent = this.clampNumber(a.pageX / window.innerWidth, 0, 1);
+        var percent = this.clampNumber(a.pageX / document.body.clientWidth, 0, 1);
     player.seekTo(percent);
   }
 
@@ -248,13 +263,12 @@ class Player extends React.Component {
   }
 
   playNextSong() {
-    const currentSong = this.state.playingSong;
-    const songs = this.songTable.current.resolvedData;
+    const {playingSong, songs} = this.state;
 
     var nextIndex = 0;
-    if (currentSong !== null)
+    if (playingSong !== null)
     {
-      var rowIndex = songs.findIndex((element) => {return element.id === currentSong.id});
+      var rowIndex = songs.findIndex(s => s.id === playingSong.id);
       nextIndex = ++rowIndex < songs.length ? rowIndex : 0;
     }
 
@@ -265,13 +279,12 @@ class Player extends React.Component {
   }
 
   playPreviousSong() {
-    const currentSong = this.state.playingSong;
-    const songs = this.songTable.current.resolvedData;
+    const {playingSong, songs} = this.state;
 
     var previousIndex = songs.length - 1;
-    if (currentSong !== null)
+    if (playingSong !== null)
     {
-      var rowIndex = songs.findIndex((element) => {return element.id === currentSong.id});
+      var rowIndex = songs.findIndex(s => s.id === playingSong.id);
       previousIndex = --rowIndex >= 0 ? rowIndex : songs.length - 1;
     }
 
@@ -279,6 +292,83 @@ class Player extends React.Component {
       playingSong: songs[previousIndex],
       isPlaying: true
     });
+  }
+
+  songList() {
+    const { songs } = this.state;
+    return <List
+      ref={this.songTable}
+      className='song-table'
+      rowCount={songs.length}
+      width={window.innerWidth}
+      height={window.innerHeight}
+      rowHeight={50}
+      rowRenderer={this.rowRenderer}
+      overscanRowCount={3}
+    />
+  }
+
+  rowRenderer = ({ index, isScrolling, key, style }) => {
+    const song = this.state.songs[index];
+    let styles = {...style, ...{
+      backgroundColor: index % 2 === 0 ? "#dddaaa" : "#dedede"
+    }};
+
+    return (
+      <div 
+        key={key}
+        style={styles}
+        onDoubleClick={() => this.handleDoubleClick(song)}
+      >
+        <img 
+          alt={'no-art'}
+          className='song-row-image'
+          draggable={false} 
+          height={50} 
+          width={50} 
+          src={`data:${song.artMimeType};base64,${song.art}`}
+          background="black"
+        />
+        <div className='song-row-text'>
+          <div>{song.title}</div>
+          <div>{this.getRowArtistString(song)}</div>
+        </div>
+      </div>
+    );
+  };
+
+  getRowArtistString(song) {
+    var ret = '';
+    if (song.artist && song.artist !== '')
+       ret += song.artist;
+    if (song.album && song.album !== '')
+       ret += ' - ' + song.album;
+    return ret;
+  }
+
+  handleClick(s) {
+      this.setState({
+        selectedSong: s
+      })
+  }
+  
+  handleDoubleClick(s) {
+    this.setState({
+      playingSong: s,
+      isPlaying: true
+    })
+  }
+
+  uploadModal() {
+    return <Modal
+      className='upload-modal'
+      appElement={document.getElementById('root')}
+      isOpen={this.state.modalIsOpen}
+    >
+      <h3>Drag music files to upload!</h3>
+      <button onClick={() => this.setState({modalIsOpen:false})}>close</button>
+      <div>{<Gallery uploader={ this.uploader() } />}</div>
+    </Modal>
   }
 
   uploader() {
@@ -326,90 +416,8 @@ class Player extends React.Component {
       songs: newSongs
     });
   }
-
-  songList() {
-    const { error, isLoaded, songs } = this.state;
-    if (error) {
-      return <div>Error: {error.message}</div>;
-    } else if (!isLoaded) {
-      return <div>Loading...</div>;
-    } else {
-        return <ReactTable
-        ref={this.songTable}
-        data={songs}
-        columns={[
-          {
-            columns: [
-              {
-                Header: "Title",
-                accessor: "title"
-              },
-              {
-                Header: "Artist",
-                accessor: "artist"
-              },
-              {
-                Header: "Album",
-                accessor: "album"
-              },
-              {
-                Header: "Duration",
-                accessor: "lengthString"
-              },
-              {
-                Header: "Genre",
-                accessor: "genre"
-              },
-              {
-                Header: "Rating",
-                accessor: "rating"
-              }
-            ]
-          }
-        ]}
-        defaultSorted={[
-          {
-            id: "Title",
-            desc: false
-          }
-        ]}
-        defaultPageSize={10}
-        className="song-table -striped -highlight"
-        getTdProps={(state, rowInfo, column, instance) => {
-          return {
-            onClick: (e, handleOriginal) => {
-              if (rowInfo != null)
-                this.handleClick(rowInfo.original);
-              if (handleOriginal) {
-                handleOriginal();
-              }
-            },
-            onDoubleClick: (e, handleOriginal) => {
-              if (rowInfo != null)
-                this.handleDoubleClick(rowInfo.original);
-              if (handleOriginal) {
-                handleOriginal();
-              }
-            }
-          };
-        }}
-      />
-    }
-  }
-
-  handleClick(s) {
-      this.setState({
-        selectedSong: s
-      })
-  }
-  
-  handleDoubleClick(s) {
-    this.setState({
-      playingSong: s,
-      isPlaying: true
-    })
-  }
 }
+
 
 // ========================================
 

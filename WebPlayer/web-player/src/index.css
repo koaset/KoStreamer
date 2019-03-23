@@ -38,8 +38,7 @@ body {
 }
 
 .search-bar {
-  height: 15px;
-  color: blue;
+  height: 10px;
 }
 
 .react-player {
@@ -47,5 +46,30 @@ body {
 }
 
 .song-table {
+  outline: 0px;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
 
+.song-row-image {
+  height: 50px;
+  float: left;
+}
+
+.song-row-text {
+  height: 50px;
+  float: left;
+  margin: 5px;
+  margin-left: 10px;
+  line-height: 20px;
+}
+
+.upload-modal {
+  height: auto;
+  width: 50%;
+  transform: translate(50%,10%);
+  border: 20px;
+  border-color: black;
+  outline: 0px;
 }
