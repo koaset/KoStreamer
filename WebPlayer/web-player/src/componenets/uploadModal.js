@@ -51,10 +51,24 @@ class UploadModal extends Component {
               enableAuto: false
           },
           callbacks: {
-            onComplete: (_, __, response) => this.props.onUploadComplete((response))
+            onValidate: (file) => this.validateFile(file),
+            onComplete: (_, __, response) => this.props.onUploadComplete((response))  
           }
       }
     });
+  }
+
+  validateFile(file) {
+    try {
+      const allowedExtensions = ["mp3", "m4a", "wma", "aac", "flac"];
+      var split = file.name.split('.');
+      var extension = split[split.length - 1];
+      return allowedExtensions.indexOf(extension) > -1;
+    }
+    catch(error) {
+      console.log(error);
+      return false;
+    }
   }
 
   show() {
