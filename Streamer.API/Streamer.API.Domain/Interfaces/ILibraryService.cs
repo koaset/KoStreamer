@@ -8,6 +8,7 @@ namespace Streamer.API.Domain.Interfaces
     public interface ILibraryService
     {
         string UserLibraryPath();
+        string UserLibraryPath(string accountId);
         void AddSongToUserLibrary(Song song);
         List<Song> GetUserLibrary();
         Task<UploadSongResult> AddSongAsync(MemoryStream file, string fileName);

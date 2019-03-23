@@ -27,7 +27,7 @@ namespace Streamer.API.Models
 
         public static SongModel FromSong(Song song)
         {
-            var imageData = song.GetImageData();
+            var imageData = (ImageData)null;//song.GetImageData();
 
             return new SongModel
             {

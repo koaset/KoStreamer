@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Streamer.API.Domain.Interfaces;
 using Streamer.API.Startup.Filters;
 using Streamer.API.Startup.Middleware;
 using Swashbuckle.AspNetCore.Swagger;
@@ -49,6 +50,9 @@ namespace Streamer.API.Startup
 
                 c.OperationFilter<SessionHeaderFilter>();
             });
+
+            var serviceProvider = services.BuildServiceProvider();
+            Domain.Setup.StartupHelper.DoUserFolderCleanup(serviceProvider.GetService<IDataAccess>(), serviceProvider.GetService<ILibraryService>());
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

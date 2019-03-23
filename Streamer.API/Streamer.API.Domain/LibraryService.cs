@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Streamer.API.Domain.Entities;
 using Streamer.API.Domain.Interfaces;
 using System;
@@ -16,26 +15,27 @@ namespace Streamer.API.Domain
     {
         public static string[] AllowedExtensions = { ".mp3", ".m4a", ".wma", ".aac", ".flac" };
         private readonly string mediaFolder;
-        private readonly Account userAccount;
+        private readonly IAccountService accountService;
         private readonly IDataAccess dataAccess;
 
-        public LibraryService(IConfiguration configuration, Account userAccount, IDataAccess dataAccess)
+        public LibraryService(IConfiguration configuration, IAccountService accountService, IDataAccess dataAccess)
         {
             mediaFolder = configuration.GetValue<string>("MediaFolder");
-            this.userAccount = userAccount;
+            this.accountService = accountService;
             this.dataAccess = dataAccess;
         }
 
-        public string UserLibraryPath() => $"{mediaFolder}{Path.DirectorySeparatorChar}{userAccount.AccountId}";
+        public string UserLibraryPath() => $"{mediaFolder}{Path.DirectorySeparatorChar}{accountService.GetAccountBySession().AccountId}";
+        public string UserLibraryPath(string accountId) => $"{mediaFolder}{Path.DirectorySeparatorChar}{accountId}";
 
         public void AddSongToUserLibrary(Song song)
         {
-            dataAccess.AddSongForUser(song, userAccount);
+            dataAccess.AddSongForUser(song, accountService.GetAccountBySession());
         }
 
         public List<Song> GetUserLibrary()
         {
-            return dataAccess.GetSongsForUser(userAccount);
+            return dataAccess.GetSongsForUser(accountService.GetAccountBySession().AccountId);
         }
 
         public async Task<UploadSongResult> AddSongAsync(MemoryStream stream, string fileName)
@@ -68,7 +68,7 @@ namespace Streamer.API.Domain
                     md5Hash = GetStringFromMd5Bytes(md5.ComputeHash(stream));
                 }
 
-                var songExists = dataAccess.GetSongByMd5HashForUser(md5Hash, userAccount) != null;
+                var songExists = dataAccess.GetSongByMd5HashForUser(md5Hash, accountService.GetAccountBySession()) != null;
 
                 if (songExists)
                 {

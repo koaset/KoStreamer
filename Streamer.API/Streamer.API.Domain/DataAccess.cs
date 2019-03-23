@@ -16,6 +16,27 @@ namespace Streamer.API.Domain
             connectionString = Environment.GetEnvironmentVariable(dbEnvVarKey) ?? Environment.GetEnvironmentVariable(dbEnvVarKey, EnvironmentVariableTarget.Machine);
         }
 
+        public List<string> GetAllUserIds()
+        {
+            using (var conn = new NpgsqlConnection(connectionString))
+            {
+                conn.Open();
+
+                using (var cmd = new NpgsqlCommand($"SELECT account_id FROM accounts", conn))
+                {
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        var ret = new List<string>();
+                        while (reader.Read())
+                        {
+                            ret.Add(reader["account_id"].ToString());
+                        }
+                        return ret;
+                    }
+                }
+            }
+        }
+
         public Account GetAccountById(string id)
         {
             using (var conn = new NpgsqlConnection(connectionString))
@@ -190,7 +211,7 @@ namespace Streamer.API.Domain
             }
         }
 
-        public List<Song> GetSongsForUser(Account userAccount)
+        public List<Song> GetSongsForUser(string accountId)
         {
             using (var conn = new NpgsqlConnection(connectionString))
             {
@@ -198,7 +219,7 @@ namespace Streamer.API.Domain
 
                 using (var cmd = new NpgsqlCommand($"SELECT * FROM account_songs WHERE account_id=@account_id", conn))
                 {
-                    cmd.Parameters.Add(new NpgsqlParameter("account_id", userAccount.AccountId));
+                    cmd.Parameters.Add(new NpgsqlParameter("account_id", accountId));
 
                     using (var reader = cmd.ExecuteReader())
                     {
@@ -253,6 +274,20 @@ namespace Streamer.API.Domain
                     cmd.Parameters.Add(new NpgsqlParameter("md5_hash", song.Md5Hash));
                     cmd.Parameters.Add(new NpgsqlParameter("size_bytes", song.SizeBytes));
 
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public void DeleteSongForUser(Song song)
+        {
+            using (var conn = new NpgsqlConnection(connectionString))
+            {
+                conn.Open();
+
+                using (var cmd = new NpgsqlCommand("DELETE FROM account_songs WHERE song_id=@song_id", conn))
+                {
+                    cmd.Parameters.Add(new NpgsqlParameter("song_id", song.Id));
                     cmd.ExecuteNonQuery();
                 }
             }
