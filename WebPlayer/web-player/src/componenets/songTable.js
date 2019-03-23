@@ -1,20 +1,80 @@
 import React, { Component } from 'react';
-import { List } from 'react-virtualized'
+import { Table, Column, AutoSizer } from 'react-virtualized'
 import 'react-virtualized/styles.css'
 
 class SongTable extends Component {
+  constructor(props) {
+    super(props)
+
+    console.log(this.props)
+}
 
   render() {
     const { songs } = this.props;
-    return <List
-      className='song-table'
-      rowCount={songs.length}
-      width={document.body.clientWidth}
-      height={window.innerHeight}
-      rowHeight={50}
-      rowRenderer={this.rowRenderer}
-      overscanRowCount={3}
-    />
+    return <AutoSizer>
+      {
+        ({ height, width }) => (
+          <Table
+            width={width}
+            height={height - 60}
+            headerHeight={20}
+            rowHeight={30}
+            rowCount={songs.length}
+            rowGetter={({ index }) => songs[index]}
+            onRowDoubleClick={(row) => this.props.handleRowDoubleClick(row.rowData)}
+            rowStyle={ 
+              (data) =>  {
+                var index = data.index;
+                var color = "#f5f5f5";
+                if ((index % 2) === 0)
+                  color = "#ffffff";
+                return {backgroundColor: color};
+              }
+            }
+          >
+            <Column
+              label='Title'
+              dataKey='title'
+              width={200}
+            />
+            <Column
+              label='Length'
+              dataKey='lengthString'
+              width={60}
+            />
+            <Column
+              width={100}
+              label='Artist'
+              dataKey='artist'
+            />
+            <Column
+              width={250}
+              label='Album'
+              dataKey='album'
+            />
+            <Column
+              width={100}
+              label='Genre'
+              dataKey='genre'
+            />
+            <Column
+              width={100}
+              label='Rating'
+              dataKey='rating'
+              cellDataGetter={(row) => {
+                if (row.rowData.rating < 0)
+                  return '';
+                return row.rowData.rating;
+              }}
+            />
+            <Column
+              width={100}
+              label='Date added'
+              dataKey='added'
+            />
+          </Table>
+      )}
+    </AutoSizer> 
   }
 
   rowRenderer = ({ index, isScrolling, key, style }) => {
@@ -41,9 +101,14 @@ class SongTable extends Component {
           src={`data:${song.artMimeType};base64,${song.art}`}
           background="black"
         />
-        <div className='song-row-text'>
-          <div>{song.title}</div>
-          <div>{this.getRowArtistString(song)}</div>
+        <div>
+          <div className='song-row-text'>
+            <div>{song.title}</div>
+            <div>{this.getRowArtistString(song)}</div>
+          </div>
+          <div className='song-row-text'>
+            <div>Test</div>
+          </div>
         </div>
       </div>
     );
