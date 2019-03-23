@@ -9,7 +9,6 @@ class Progress extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({width: this.divRef.current.offsetWidth})
     setInterval(() => this.setState({ time: Date.now()}), 1000)
   }
 
@@ -54,6 +53,13 @@ class Progress extends React.Component {
         <div className="progressbar-progress" style={style}>{children}</div>
       </div>
     );
+  }
+
+  clickPercentage (clickInfo) {
+    var clickX = clickInfo.pageX;
+    var rect = this.divRef.current.getBoundingClientRect();
+    var clickRelativeX = clickX - rect.left;
+    return clickRelativeX / rect.width;
   }
 }
 

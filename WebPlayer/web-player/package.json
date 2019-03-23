@@ -7,7 +7,6 @@
     "fine-uploader": "^5.16.2",
     "fine-uploader-wrappers": "^1.0.1",
     "react": "^16.4.2",
-    "react-burger-menu": "^2.6.5",
     "react-dom": "^16.4.2",
     "react-fine-uploader": "^1.1.1",
     "react-google-login": "^5.0.2",
@@ -15,6 +14,7 @@
     "react-player": "^1.9.3",
     "react-router-dom": "^5.0.0",
     "react-scripts": "1.1.5",
+    "react-sidebar": "^3.0.2",
     "react-virtualized": "^9.21.0"
   },
   "scripts": {
