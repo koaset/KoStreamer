@@ -190,6 +190,7 @@ class Player extends React.Component {
               loop={false}
               onProgress={o => this.onProgress(o)}
               onEnded={() => this.playNextSong()}
+              style={{visibility: "hidden"}}
             />
             <UploadModal 
               ref={this.uploadModal}

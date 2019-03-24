@@ -1,11 +1,12 @@
 body {
-    margin: 0px;
-    font: 14px "Century Gothic", Futura, sans-serif;
-  }
+  margin: 0px;
+  font: 14px "Century Gothic", Futura, sans-serif;
+}
 
-  .main {
-    max-width: 1200px;
-  }
+.main {
+  max-width: 1200px;
+  height: 100%;
+}
 
 .menu-bar {
   background: whitesmoke;
@@ -44,10 +45,6 @@ body {
 
 .search-bar {
   height: 10px;
-}
-
-.react-player {
-  visibility: hidden
 }
 
 .song-table {
