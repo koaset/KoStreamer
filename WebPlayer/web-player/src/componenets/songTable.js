@@ -35,7 +35,7 @@ class SongTable extends Component {
             <Column
               label='Title'
               dataKey='title'
-              width={200}
+              width={250}
             />
             <Column
               label='Length'
@@ -43,7 +43,7 @@ class SongTable extends Component {
               width={60}
             />
             <Column
-              width={100}
+              width={250}
               label='Artist'
               dataKey='artist'
             />
@@ -53,12 +53,12 @@ class SongTable extends Component {
               dataKey='album'
             />
             <Column
-              width={100}
+              width={150}
               label='Genre'
               dataKey='genre'
             />
             <Column
-              width={100}
+              width={60}
               label='Rating'
               dataKey='rating'
               cellDataGetter={(row) => {

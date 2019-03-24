@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import ReactPlayer from 'react-player'
 
-import GoogleLogin from 'react-google-login';
+import { GoogleLogin } from 'react-google-login';
 
 import Sidebar from "./componenets/sidebar";
 import Progress from './componenets/progressbar';
@@ -56,7 +56,22 @@ class Player extends React.Component {
   signOut() {
     var auth2 = window.gapi.auth2.getAuthInstance();
     auth2.signOut().then(() => {
+      
+      var session = this.state.session;
+
+      if (session)
+      {
+        fetch(baseUrl + "/session", {
+          method: 'DELETE',
+          headers: {
+            'Accept': 'application/json',
+            'X-Session': session
+          }
+        });
+      }
+
       this.setState({session: null});
+      localStorage.removeItem('loginResult');
       window.location.reload();
     });
   }
@@ -158,13 +173,7 @@ class Player extends React.Component {
                 {playNextButton}
                 {uploadButton}
               </div>
-              <GoogleLogin
-                className='login-button'
-                clientId="900614446703-5p76k96hle7h4ucg4qgdcclcnl4t7njj.apps.googleusercontent.com"
-                buttonText="Login"
-                onSuccess={(r) => this.onSignIn(r.tokenObj.id_token)}
-                onFailure={() =>{}}
-              />
+              {this.googleButton()}
               <div className='now-playing'>{this.getNowPlayingString(playingSong)}</div>
             </div>
             <Progress 
@@ -201,6 +210,24 @@ class Player extends React.Component {
           </div>
         </Sidebar>
       </div>
+    );
+  }
+
+  googleButton() {
+    var loggedIn = this.state.session ? true : false;
+    return loggedIn ? (
+      <button
+        className='google-button'
+        onClick={() => {this.signOut()}}
+      >Logout</button>
+    ) : (
+    <GoogleLogin
+      className='google-button'
+      clientId="900614446703-5p76k96hle7h4ucg4qgdcclcnl4t7njj.apps.googleusercontent.com"
+      buttonText="Login"
+      onSuccess={(r) => this.onSignIn(r.tokenObj.id_token)}
+      onFailure={() =>{}}
+    />
     );
   }
 

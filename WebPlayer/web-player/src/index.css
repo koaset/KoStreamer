@@ -37,10 +37,11 @@ body {
   -ms-user-select: none;
 }
 
-.login-button {
+.google-button {
   float: right;
   height: 48px;
   box-shadow: 0px 0px !important;
+  outline: 0px;
 }
 
 .search-bar {
