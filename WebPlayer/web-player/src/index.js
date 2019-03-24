@@ -3,13 +3,12 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 
 import ReactPlayer from 'react-player'
-
 import { GoogleLogin } from 'react-google-login';
 
 import Sidebar from "./componenets/sidebar";
 import Progress from './componenets/progressbar';
-import SongTable from './componenets/songTable';
-import UploadModal from './componenets/uploadModal';
+import SongTable from './componenets/songtable';
+import UploadModal from './componenets/uploadmodal';
 
 import './index.css';
 
