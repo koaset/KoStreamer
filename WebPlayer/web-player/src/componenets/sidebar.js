@@ -10,17 +10,9 @@ class Sidebar extends Component {
     this.itemList = React.createRef();
     this.state = {
       width: 200,
-      selectedPlaylistId: this.data[0].id
+      selectedPlaylistId: this.props.songLists[0].id
     };
   }
-
-  data = [
-    { name:"Song feed", id:0 },
-    { name:"All songs", id:1 },
-    { name:"Artists", id:2 },
-    { name:"Albums", id:3 },
-    { name:"Playlists", id:4 }
-  ];
 
   rowRenderer = ({ index, isScrolling, key, style }) => {
     var textClass = this.state.selectedPlaylistId === index ? 'sidebar-list-text-selected' : 'sidebar-list-text';
@@ -33,17 +25,25 @@ class Sidebar extends Component {
           className={textClass}
           onClick={() => this.itemClicked(index)}
         >
-          {this.data[index].name}
+          {this.props.songLists[index].name}
         </span>
       </div>
     );
   }
 
   itemClicked(itemIndex) {
+    const current = this.state.selectedPlaylistId;
+
+    if (current === itemIndex)
+      return;
+
     this.setState({
       selectedPlaylistId: itemIndex
     });
     this.itemList.current.forceUpdateGrid();
+    if (this.props.onItemSelected) {
+      this.props.onItemSelected(itemIndex);
+    }
   }
   
   render() {
@@ -64,7 +64,7 @@ class Sidebar extends Component {
               <List
                 ref={this.itemList}
                 className='sidebar-list'
-                rowCount={this.data.length}
+                rowCount={this.props.songLists.length}
                 width={this.state.width - 50}
                 height={600}
                 rowHeight={40}

@@ -9,10 +9,14 @@ import Sidebar from "./componenets/sidebar";
 import Progress from './componenets/progressbar';
 import SongTable from './componenets/songtable';
 import UploadModal from './componenets/uploadmodal';
+import SongFeed from './componenets/songfeed';
 
 import './index.css';
 
 var baseUrl = 'https://localhost:44361';
+
+const songFeedId = 0;
+const libraryId = 1;
 
 class Player extends React.Component {
   constructor(props) {
@@ -21,18 +25,28 @@ class Player extends React.Component {
     this.songTable = React.createRef();
     this.progressBar = React.createRef();
     this.uploadModal = React.createRef();
+    this.songFeed = React.createRef();
     this.state = {
       session: null,
       counter: 0,
-      songs: [],
+      librarySongs: [],
+      showingSongs: [],
+      songFeedSongs: [],
       selectedSong: null,
       playingSong: null,
+      playingSongPlaylistId: null,
+      playingSongIndex: null,
       isLoaded: false,
       volume: 0.1,
       isPlaying: false,
       songProgress: 0,
       loadError: null,
-      orientation : null
+      orientation : null,
+      songLists: [
+        { name:"Song feed", id:0 },
+        { name:"All songs", id:1 }
+      ],
+      selectedSongListId: 0
     };
   }
 
@@ -50,6 +64,11 @@ class Player extends React.Component {
     }
     
     this.setState({isLoaded:true});
+
+    this.songFeed.current.populate();
+    this.setState({
+      songs: this.songFeed.current.state.list
+    });
   }
 
   signOut() {
@@ -119,7 +138,7 @@ class Player extends React.Component {
         localStorage.removeItem('loginResult');
 
         this.setState({
-          songs: [],
+          librarySongs: [],
           isLoaded: true,
           session: null,
           loadError: null
@@ -133,7 +152,7 @@ class Player extends React.Component {
     .then(
       (result) => {
         this.setState({
-          songs: result,
+          librarySongs: result,
           isLoaded: true,
           loadError: null
         });
@@ -141,15 +160,39 @@ class Player extends React.Component {
       (error) => {
         console.error(error);
         this.setState({
-          songs: [],
+          librarySongs: [],
           isLoaded: true,
           loadError: error
       });
     });
   }
 
+  getSongs () {
+    return this.getSongsForPlaylist(this.state.selectedSongListId);
+  }
+
+  getSongsForPlaylist (playlistIndex) {
+    const { songLists } = this.state;
+    var id = songLists[playlistIndex].id;
+    if (id === songFeedId) {
+      return this.state.songFeedSongs;
+    } else if (id == libraryId) {
+      return this.state.librarySongs;
+    }
+    else {
+      // other playlists
+      console.log('Not implemented');
+    }
+  }
+
+  selectPlaylist (index) {
+    this.setState({
+      selectedSongListId: index
+    });
+  }
+
   render() {
-    const { isPlaying, volume, isLoaded, playingSong, songProgress, session, songs } = this.state;
+    const { isPlaying, volume, isLoaded, playingSong, songProgress, session, librarySongs, showingSongs } = this.state;
     
     var playPauseButton = this.playPauseButton();
     var volDownButton = <button className='control-button' onClick={() => this.setState({volume:Math.min(volume + 0.01, 1)})}>vol+</button>;
@@ -157,12 +200,15 @@ class Player extends React.Component {
     var playPreviousButton = <button className='control-button' onClick={() => this.playPreviousSong()}>&lt;&lt;</button>;
     var playNextButton = <button className='control-button' onClick={() => this.playNextSong()}>>></button>;
     var uploadButton = <button className='control-button' onClick={() => this.uploadModal.current.show()}>upload</button>;
-
+    
     var songUrl = isLoaded && playingSong != null ? baseUrl + '/library/song/play?id=' + playingSong.id + '&sessionId=' +  session : null;
     
     return (
       <div>
-        <Sidebar>
+          <Sidebar 
+            songLists={this.state.songLists}
+            onItemSelected={(i) => this.selectPlaylist(i)}
+          >
           <div className='main'>
             <div className='menu-bar'>
               <div className='control-buttons'>
@@ -183,7 +229,7 @@ class Player extends React.Component {
               completed={songProgress == null ? 0 : songProgress
             }/>
             <SongTable 
-              songs={songs} 
+              songs={this.getSongs()} 
               ref={this.songTable} 
               handleRowDoubleClick={(s) => this.handleDoubleClick(s)} 
             />
@@ -206,6 +252,11 @@ class Player extends React.Component {
               onUploadComplete={(result) => this.onUploadComplete(result)}
               session={session}
               apiUrl={baseUrl}
+            />
+            <SongFeed 
+              ref={this.songFeed} 
+              songs={librarySongs} 
+              onUpdated={(s) => this.setState({songFeedSongs:s})}
             />
           </div>
         </Sidebar>
@@ -278,43 +329,44 @@ class Player extends React.Component {
     this.setState({isPlaying:false});
   }
 
-  playSong(s) {
+  playSong(song, playListId) {
+    var songs = this.getSongsForPlaylist(playListId);
+    var index = songs.findIndex(s => s.id === song.id);
+    
     this.setState({
-      playingSong: s,
+      playingSong: song,
+      playingSongPlaylistId: playListId,
+      playingSongIndex: index,
       isPlaying: true
     });
   }
 
   playNextSong() {
-    const {playingSong, songs} = this.state;
-
+    const {playingSong, playingSongPlaylistId, playingSongIndex} = this.state;
+    
+    var songs = this.getSongsForPlaylist(playingSongPlaylistId);
+    var currentIndex = playingSongIndex;
     var nextIndex = 0;
     if (playingSong !== null)
     {
-      var rowIndex = songs.findIndex(s => s.id === playingSong.id);
-      nextIndex = ++rowIndex < songs.length ? rowIndex : 0;
+      nextIndex = ++currentIndex < songs.length ? currentIndex : 0;
     }
 
-    this.setState({
-      playingSong: songs[nextIndex],
-      isPlaying: true
-    });
+    this.playSong(songs[nextIndex], playingSongPlaylistId);
   }
 
   playPreviousSong() {
-    const {playingSong, songs} = this.state;
+    const {playingSong, playingSongPlaylistId, playingSongIndex} = this.state;
 
+    var songs = this.getSongsForPlaylist(playingSongPlaylistId);
+    var currentIndex = playingSongIndex;
     var previousIndex = songs.length - 1;
     if (playingSong !== null)
     {
-      var rowIndex = songs.findIndex(s => s.id === playingSong.id);
-      previousIndex = --rowIndex >= 0 ? rowIndex : songs.length - 1;
+      previousIndex = --currentIndex >= 0 ? currentIndex : songs.length - 1;
     }
 
-    this.setState({
-      playingSong: songs[previousIndex],
-      isPlaying: true
-    });
+    this.playSong(songs[previousIndex], playingSongPlaylistId);
   }
 
   handleClick(s) {
@@ -324,10 +376,7 @@ class Player extends React.Component {
   }
   
   handleDoubleClick(s) {
-    this.setState({
-      playingSong: s,
-      isPlaying: true
-    })
+    this.playSong(s, this.state.selectedSongListId);
   }
 
   onUploadComplete(response) {
@@ -337,11 +386,11 @@ class Player extends React.Component {
     }
     
     var song = response.song;
-    var newSongs = this.state.songs.slice();    
+    var newSongs = this.state.librarySongs.slice();    
     newSongs.push(song);  
 
     this.setState({
-      songs: newSongs
+      librarySongs: newSongs
     });
   }
 }
