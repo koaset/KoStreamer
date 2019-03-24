@@ -6,6 +6,9 @@ body {
 .main {
   max-width: 1200px;
   height: 100%;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
 
 .menu-bar {
@@ -32,9 +35,6 @@ body {
   color: black;
   font-size: 15px;
   font-weight: 600;
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
 }
 
 .google-button {
@@ -46,26 +46,6 @@ body {
 
 .search-bar {
   height: 10px;
-}
-
-.song-table {
-  outline: 0px;
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-}
-
-.song-row-image {
-  height: 50px;
-  float: left;
-}
-
-.song-row-text {
-  height: 50px;
-  float: left;
-  margin: 5px;
-  margin-left: 10px;
-  line-height: 20px;
 }
 
 .upload-modal {

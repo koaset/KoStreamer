@@ -23,14 +23,14 @@ class Sidebar extends Component {
   ];
 
   rowRenderer = ({ index, isScrolling, key, style }) => {
-    var className = this.state.selectedPlaylistId === index ? className = 'sidebar-list-text-selected' : 'sidebar-list-text';
+    var textClass = this.state.selectedPlaylistId === index ? 'sidebar-list-text-selected' : 'sidebar-list-text';
     return (
       <div 
         key={key}
         style={{margin:"10px"}}
       >
         <span 
-          className={className}
+          className={textClass}
           onClick={() => this.itemClicked(index)}
         >
           {this.data[index].name}

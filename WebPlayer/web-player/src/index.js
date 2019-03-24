@@ -150,15 +150,16 @@ class Player extends React.Component {
 
   render() {
     const { isPlaying, volume, isLoaded, playingSong, songProgress, session, songs } = this.state;
+    
     var playPauseButton = this.playPauseButton();
     var volDownButton = <button className='control-button' onClick={() => this.setState({volume:Math.min(volume + 0.01, 1)})}>vol+</button>;
     var volUpButton = <button className='control-button' onClick={() => this.setState({volume:Math.max(volume - 0.01, 0)})}>vol-</button>;
     var playPreviousButton = <button className='control-button' onClick={() => this.playPreviousSong()}>&lt;&lt;</button>;
     var playNextButton = <button className='control-button' onClick={() => this.playNextSong()}>>></button>;
-    var songUrl = isLoaded && playingSong != null ? baseUrl + '/library/song/play?id=' + playingSong.id + '&sessionId=' +  session : null;
-
     var uploadButton = <button className='control-button' onClick={() => this.uploadModal.current.show()}>upload</button>;
 
+    var songUrl = isLoaded && playingSong != null ? baseUrl + '/library/song/play?id=' + playingSong.id + '&sessionId=' +  session : null;
+    
     return (
       <div>
         <Sidebar>
