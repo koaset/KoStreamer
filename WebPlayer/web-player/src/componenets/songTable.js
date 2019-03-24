@@ -32,7 +32,8 @@ class SongTable extends Component {
                   color = "#ffffff";
                 return {
                   backgroundColor: color,
-                  outline: "0px"
+                  outline: "0px",
+                  paddingRight: "0px"
                 };
               }
             }
