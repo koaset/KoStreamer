@@ -3,9 +3,10 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 
 import ReactPlayer from 'react-player'
-import Sidebar from "react-sidebar";
+
 import GoogleLogin from 'react-google-login';
 
+import Sidebar from "./componenets/sidebar";
 import Progress from './componenets/progressbar';
 import SongTable from './componenets/songTable';
 import UploadModal from './componenets/uploadModal';
@@ -146,66 +147,57 @@ class Player extends React.Component {
 
     return (
       <div>
-        <Sidebar
-          sidebar={<b>Sidebar content</b>}
-          docked={true}
-          open={true}
-          transitions={false}
-          styles={
-            { 
-              sidebar: {
-                background: "white"
-              }
-            }}
-        >
-          <div className='menu-bar'>
-            <div className='control-buttons'>
-              {playPreviousButton}
-              {playPauseButton}
-              {volDownButton}
-              {volUpButton}
-              {playNextButton}
-              {uploadButton}
+        <Sidebar>
+          <div className='main'>
+            <div className='menu-bar'>
+              <div className='control-buttons'>
+                {playPreviousButton}
+                {playPauseButton}
+                {volDownButton}
+                {volUpButton}
+                {playNextButton}
+                {uploadButton}
+              </div>
+              <GoogleLogin
+                className='login-button'
+                clientId="900614446703-5p76k96hle7h4ucg4qgdcclcnl4t7njj.apps.googleusercontent.com"
+                buttonText="Login"
+                onSuccess={(r) => this.onSignIn(r.tokenObj.id_token)}
+                onFailure={() =>{}}
+              />
+              <div className='now-playing'>{this.getNowPlayingString(playingSong)}</div>
             </div>
-            <GoogleLogin
-              className='login-button'
-              clientId="900614446703-5p76k96hle7h4ucg4qgdcclcnl4t7njj.apps.googleusercontent.com"
-              buttonText="Login"
-              onSuccess={(r) => this.onSignIn(r.tokenObj.id_token)}
-              onFailure={() =>{}}
+            <Progress 
+              className='search-bar' 
+              ref={this.progressBar}
+              onClick={(clickInfo) => this.player.current.seekTo(this.progressBar.current.clickPercentage(clickInfo))} 
+              completed={songProgress == null ? 0 : songProgress
+            }/>
+            <SongTable 
+              songs={songs} 
+              ref={this.songTable} 
+              handleRowDoubleClick={(s) => this.handleDoubleClick(s)} 
             />
-            <div className='now-playing'>{this.getNowPlayingString(playingSong)}</div>
+            <ReactPlayer
+              ref={this.player}
+              className='react-player'
+              width='0%'
+              height='0%'
+              url={songUrl}
+              playing={isPlaying}
+              volume={volume}
+              progressInterval={50}
+              loop={false}
+              onProgress={o => this.onProgress(o)}
+              onEnded={() => this.playNextSong()}
+            />
+            <UploadModal 
+              ref={this.uploadModal}
+              onUploadComplete={(result) => this.onUploadComplete(result)}
+              session={session}
+              apiUrl={baseUrl}
+            />
           </div>
-          <Progress 
-            className='search-bar' 
-            ref={this.progressBar}
-            onClick={(clickInfo) => this.player.current.seekTo(this.progressBar.current.clickPercentage(clickInfo))} 
-            completed={songProgress == null ? 0 : songProgress
-          }/>
-          <SongTable 
-            songs={songs} 
-            ref={this.songTable} 
-            handleRowDoubleClick={(s) => this.handleDoubleClick(s)} 
-          />
-          <ReactPlayer
-            ref={this.player}
-            className='react-player'
-            width='0%'
-            height='0%'
-            url={songUrl}
-            playing={isPlaying}
-            volume={volume}
-            progressInterval={50}
-            loop={false}
-            onProgress={o => this.onProgress(o)}
-            onEnded={() => this.playNextSong()}
-          />
-          <UploadModal 
-            ref={this.uploadModal}
-            onUploadComplete={(result) => this.onUploadComplete(result)}
-            session={session}
-            apiUrl={baseUrl}
-          />
         </Sidebar>
       </div>
     );

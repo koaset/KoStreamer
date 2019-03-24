@@ -3,6 +3,10 @@ body {
     font: 14px "Century Gothic", Futura, sans-serif;
   }
 
+  .main {
+    max-width: 1200px;
+  }
+
 .menu-bar {
   background: whitesmoke;
   height: 50px;

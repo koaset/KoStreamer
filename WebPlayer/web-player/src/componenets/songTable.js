@@ -73,11 +73,6 @@ class SongTable extends Component {
                 return row.rowData.rating;
               }}
             />
-            <Column
-              width={100}
-              label='Date added'
-              dataKey='added'
-            />
           </Table>
       )}
     </AutoSizer> 
