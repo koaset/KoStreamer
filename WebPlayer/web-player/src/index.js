@@ -30,7 +30,6 @@ class Player extends React.Component {
       session: null,
       counter: 0,
       librarySongs: [],
-      showingSongs: [],
       songFeedSongs: [],
       selectedSong: null,
       playingSong: null,
@@ -167,16 +166,12 @@ class Player extends React.Component {
     });
   }
 
-  getSongs () {
-    return this.getSongsForPlaylist(this.state.selectedSongListId);
-  }
-
   getSongsForPlaylist (playlistIndex) {
     const { songLists } = this.state;
     var id = songLists[playlistIndex].id;
     if (id === songFeedId) {
       return this.state.songFeedSongs;
-    } else if (id == libraryId) {
+    } else if (id === libraryId) {
       return this.state.librarySongs;
     }
     else {
@@ -192,7 +187,7 @@ class Player extends React.Component {
   }
 
   render() {
-    const { isPlaying, volume, isLoaded, playingSong, songProgress, session, librarySongs, showingSongs } = this.state;
+    const { isPlaying, volume, isLoaded, playingSong, songProgress, session, librarySongs } = this.state;
     
     var playPauseButton = this.playPauseButton();
     var volDownButton = <button className='control-button' onClick={() => this.setState({volume:Math.min(volume + 0.01, 1)})}>vol+</button>;
@@ -203,6 +198,8 @@ class Player extends React.Component {
     
     var songUrl = isLoaded && playingSong != null ? baseUrl + '/library/song/play?id=' + playingSong.id + '&sessionId=' +  session : null;
     
+    var showingSongs = this.getSongsForPlaylist(this.state.selectedSongListId);
+
     return (
       <div>
           <Sidebar 
@@ -229,7 +226,7 @@ class Player extends React.Component {
               completed={songProgress == null ? 0 : songProgress
             }/>
             <SongTable 
-              songs={this.getSongs()} 
+              songs={showingSongs} 
               ref={this.songTable} 
               handleRowDoubleClick={(s) => this.handleDoubleClick(s)} 
             />
@@ -255,7 +252,7 @@ class Player extends React.Component {
             />
             <SongFeed 
               ref={this.songFeed} 
-              songs={librarySongs} 
+              songSource={librarySongs} 
               onUpdated={(s) => this.setState({songFeedSongs:s})}
             />
           </div>
@@ -333,6 +330,11 @@ class Player extends React.Component {
     var songs = this.getSongsForPlaylist(playListId);
     var index = songs.findIndex(s => s.id === song.id);
     
+    if (playListId === songFeedId) {
+      this.songFeed.current.playSongAt(index);
+      index = this.songFeed.current.state.numPrev;
+    }
+
     this.setState({
       playingSong: song,
       playingSongPlaylistId: playListId,
@@ -357,6 +359,10 @@ class Player extends React.Component {
 
   playPreviousSong() {
     const {playingSong, playingSongPlaylistId, playingSongIndex} = this.state;
+
+    if (playingSongPlaylistId === songFeedId && playingSongIndex === 0) {
+      return;
+    }
 
     var songs = this.getSongsForPlaylist(playingSongPlaylistId);
     var currentIndex = playingSongIndex;
