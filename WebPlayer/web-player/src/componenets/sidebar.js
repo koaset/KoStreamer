@@ -9,7 +9,7 @@ class Sidebar extends Component {
     super(props);
     this.itemList = React.createRef();
     this.state = {
-      width: 200,
+      width: 85,
       selectedPlaylistId: this.props.songLists[0].id
     };
   }
@@ -65,7 +65,7 @@ class Sidebar extends Component {
                 ref={this.itemList}
                 className='sidebar-list'
                 rowCount={this.props.songLists.length}
-                width={this.state.width - 50}
+                width={this.state.width}
                 height={600}
                 rowHeight={40}
                 rowRenderer={this.rowRenderer}
