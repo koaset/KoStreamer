@@ -6,13 +6,14 @@ class SongTable extends Component {
 
   render() {
     const { songs } = this.props;
+    const isPortrait = window.innerWidth * 1.5 < window.innerHeight;
     return <AutoSizer>
       {
         ({ height, width }) => (
           <Table
             gridStyle={{outline:"0px"}}
             width={width}
-            height={height - 60}
+            height={height - 120}
             headerHeight={20}
             rowHeight={30}
             rowCount={songs.length}
@@ -37,11 +38,12 @@ class SongTable extends Component {
               dataKey='title'
               width={250}
             />
+            {isPortrait ? null :
             <Column
               label='Length'
               dataKey='lengthString'
               width={60}
-            />
+            />}
             <Column
               width={250}
               label='Artist'
@@ -52,11 +54,13 @@ class SongTable extends Component {
               label='Album'
               dataKey='album'
             />
+            {isPortrait ? null :
             <Column
               width={150}
               label='Genre'
               dataKey='genre'
-            />
+            />}
+            {isPortrait ? null : 
             <Column
               width={60}
               label='Rating'
@@ -66,7 +70,7 @@ class SongTable extends Component {
                   return '';
                 return row.rowData.rating;
               }}
-            />
+            />}
           </Table>
       )}
     </AutoSizer> 

@@ -188,7 +188,8 @@ class Player extends React.Component {
 
   render() {
     const { isPlaying, volume, isLoaded, playingSong, songProgress, session, librarySongs } = this.state;
-    
+    const isPortrait = window.innerWidth * 1.5 < window.innerHeight;
+
     var playPauseButton = this.playPauseButton();
     var volDownButton = <button className='control-button' onClick={() => this.setState({volume:Math.min(volume + 0.01, 1)})}>vol+</button>;
     var volUpButton = <button className='control-button' onClick={() => this.setState({volume:Math.max(volume - 0.01, 0)})}>vol-</button>;
@@ -197,7 +198,6 @@ class Player extends React.Component {
     var uploadButton = <button className='control-button' onClick={() => this.uploadModal.current.show()}>upload</button>;
     
     var songUrl = isLoaded && playingSong != null ? baseUrl + '/library/song/play?id=' + playingSong.id + '&sessionId=' +  session : null;
-    
     var showingSongs = this.getSongsForPlaylist(this.state.selectedSongListId);
 
     return (
@@ -217,7 +217,12 @@ class Player extends React.Component {
                 {uploadButton}
               </div>
               {this.googleButton()}
-              <div className='now-playing'>{this.getNowPlayingString(playingSong)}</div>
+              {<div 
+                className='now-playing' 
+                style={isPortrait ? { clear: "both" } : null}
+              >
+                {this.getNowPlayingString(playingSong)}
+              </div>}
             </div>
             <Progress 
               className='search-bar' 

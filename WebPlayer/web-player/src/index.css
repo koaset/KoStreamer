@@ -30,11 +30,14 @@ body {
 }
 
 .now-playing {
+  overflow: hidden;
+  text-overflow: ellipsis;
   text-align: center;  
   margin-top: 12.5px;
   color: black;
   font-size: 15px;
   font-weight: 600;
+  height: 20px;
 }
 
 .google-button {
@@ -45,7 +48,7 @@ body {
 }
 
 .search-bar {
-  height: 10px;
+  height: 20px;
 }
 
 .upload-modal {

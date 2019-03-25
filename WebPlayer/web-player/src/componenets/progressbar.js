@@ -32,7 +32,7 @@ class Progress extends React.Component {
     completed: 0,
     color: '#0BD318',
     animation: 0,
-    height: 10
+    height: 20
   }
 
   static throwError() {
