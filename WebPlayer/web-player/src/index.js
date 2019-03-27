@@ -65,6 +65,14 @@ class Player extends React.Component {
     this.setState({isLoaded:true});
 
     this.songFeed.current.populate();
+
+    if (window.navigator.mediaSession !== null) {
+      navigator.mediaSession.setActionHandler('play', () => this.playOrPause());
+      navigator.mediaSession.setActionHandler('pause', () => this.playOrPause());
+      navigator.mediaSession.setActionHandler('previoustrack', () => this.playPreviousSong());
+      navigator.mediaSession.setActionHandler('nexttrack', () => this.playNextSong());
+    }
+
     this.setState({
       songs: this.songFeed.current.state.list
     });
@@ -307,18 +315,17 @@ class Player extends React.Component {
   }
 
   playPauseButton() {
-    const { selectedSong, playingSong } = this.state;
+    const { playingSong, selectedSongListId } = this.state;
     return <button className='control-button' onClick={() => { 
-        var songToPlay = playingSong === null ? selectedSong : playingSong;
-        this.playOrPause(songToPlay);
-        
-        if (this.state.isPlaying)
-        {
-          this.pauseSong();
-          return;
+        if (playingSong === null)  {
+            var songs = this.getSongsForPlaylist(selectedSongListId);
+            if (songs.length > 0) {
+              this.playSong(songs[0], selectedSongListId);
+            }
         }
-
-        this.playSong(songToPlay);
+        else {
+          this.playOrPause();
+         }
       }
     }>play/pause</button>
   }
@@ -340,12 +347,24 @@ class Player extends React.Component {
       index = this.songFeed.current.state.numPrev;
     }
 
+    this.setSongMetadata(song);
+    
     this.setState({
       playingSong: song,
       playingSongPlaylistId: playListId,
       playingSongIndex: index,
       isPlaying: true
     });
+  }
+
+  setSongMetadata(song) {
+    if (window.navigator.mediaSession !== null) {
+      window.navigator.mediaSession.metadata = new window.MediaMetadata({
+        title: song.title,
+        artist: song.artist,
+        album: song. album
+      });
+    }
   }
 
   playNextSong() {
