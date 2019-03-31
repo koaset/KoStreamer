@@ -1,7 +1,5 @@
-﻿using Streamer.API.Domain.Entities;
-using Streamer.API.Domain.Interfaces;
+﻿using Streamer.API.Domain.Interfaces;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
