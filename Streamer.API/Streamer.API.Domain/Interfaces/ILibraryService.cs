@@ -9,6 +9,7 @@ namespace Streamer.API.Domain.Interfaces
     {
         string UserLibraryPath();
         string UserLibraryPath(string accountId);
+        string MediaFolder();
         void AddSongToUserLibrary(Song song);
         List<Song> GetUserLibrary();
         Task<UploadSongResult> AddSongAsync(MemoryStream file, string fileName);

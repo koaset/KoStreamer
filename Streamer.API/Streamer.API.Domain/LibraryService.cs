@@ -25,6 +25,7 @@ namespace Streamer.API.Domain
             this.dataAccess = dataAccess;
         }
 
+        public string MediaFolder() => mediaFolder;
         public string UserLibraryPath() => $"{mediaFolder}{Path.DirectorySeparatorChar}{accountService.GetAccountBySession().AccountId}";
         public string UserLibraryPath(string accountId) => $"{mediaFolder}{Path.DirectorySeparatorChar}{accountId}";
 
