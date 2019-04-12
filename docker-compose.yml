@@ -2,11 +2,23 @@ version: '3.4'
 
 services:
 
+  proxy:
+    image: nginx:1.15.11
+    build:
+      context: ./Proxy
+    ports:
+      - "80:80"
+    depends_on:
+      - streamer.web
+      - streamer.api
+
   streamer.web:
     build:
       context: ./WebPlayer/web-player
     ports:
-      - "80:80"
+      - "8081:80"
+    environment:
+      RUNTIME_STREAMER_API_URL: 'api'
 
   streamer.api:
     image: ${DOCKER_REGISTRY-}streamerapi

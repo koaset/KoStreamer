@@ -6,11 +6,17 @@ ENV PATH /usr/src/app/node_modules/.bin:$PATH
 COPY package.json /usr/src/app/package.json
 RUN npm install --silent
 RUN npm install react-scripts@1.1.1 -g --silent
-COPY . /usr/src/app
+COPY ./src /usr/src/app/src
+COPY ./public /usr/src/app/public
+
 RUN npm run build
 
 # production environment
 FROM nginx:1.13.9-alpine
-COPY --from=builder /usr/src/app/build /usr/share/nginx/html/player
+WORKDIR /usr/share/nginx/html/player
+COPY --from=builder /usr/src/app/build .
+COPY ./docker-start.sh .
+
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT [ "./docker-start.sh" ]
+CMD [ "nginx", "-g", "daemon off;" ]

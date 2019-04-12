@@ -13,7 +13,7 @@ import SongFeed from './componenets/songfeed';
 
 import './index.css';
 
-var baseUrl = 'https://localhost:44361';
+var apiPath = window.STREAMER_API_URL ? window.STREAMER_API_URL : 'https://localhost:44361';
 
 const songFeedId = 0;
 const libraryId = 1;
@@ -86,7 +86,7 @@ class Player extends React.Component {
 
       if (session)
       {
-        fetch(baseUrl + "/session", {
+        fetch(apiPath + "/session", {
           method: 'DELETE',
           headers: {
             'Accept': 'application/json',
@@ -102,7 +102,7 @@ class Player extends React.Component {
   }
   
   onSignIn(idToken) {
-    fetch(baseUrl + "/session/googleAuth", {
+    fetch(apiPath + "/session/googleAuth", {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -134,7 +134,7 @@ class Player extends React.Component {
       session = this.state.session;
     }
 
-    fetch(baseUrl + "/library/songs", {
+    fetch(apiPath + "/library/songs", {
       headers: {
         'X-Session': session
       }
@@ -205,7 +205,7 @@ class Player extends React.Component {
     var playNextButton = <button className='control-button' onClick={() => this.playNextSong()}>>></button>;
     var uploadButton = <button className='control-button' onClick={() => this.uploadModal.current.show()}>upload</button>;
     
-    var songUrl = isLoaded && playingSong != null ? baseUrl + '/library/song/play?id=' + playingSong.id + '&sessionId=' +  session : null;
+    var songUrl = isLoaded && playingSong != null ? apiPath + '/library/song/play?id=' + playingSong.id + '&sessionId=' +  session : null;
     var showingSongs = this.getSongsForPlaylist(this.state.selectedSongListId);
 
     return (
@@ -256,12 +256,14 @@ class Player extends React.Component {
               onProgress={o => this.onProgress(o)}
               onEnded={() => this.playNextSong()}
               style={{visibility: "hidden"}}
+              fileConfig={{forceAudio:true}}
+              playsinline={true}
             />
             <UploadModal 
               ref={this.uploadModal}
               onUploadComplete={(result) => this.onUploadComplete(result)}
               session={session}
-              apiUrl={baseUrl}
+              apiUrl={apiPath}
             />
             <SongFeed 
               ref={this.songFeed} 
@@ -353,7 +355,8 @@ class Player extends React.Component {
       playingSong: song,
       playingSongPlaylistId: playListId,
       playingSongIndex: index,
-      isPlaying: true
+      isPlaying: true,
+      songProgress: 0
     });
   }
 
