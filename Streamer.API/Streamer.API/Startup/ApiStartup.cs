@@ -52,7 +52,7 @@ namespace Streamer.API.Startup
             });
 
             var serviceProvider = services.BuildServiceProvider();
-            Domain.Setup.StartupHelper.DoUserFolderCleanup(serviceProvider.GetService<IDataAccess>(), serviceProvider.GetService<ILibraryService>());
+            new Domain.CleanupHelper(serviceProvider.GetService<IDataAccess>(), serviceProvider.GetService<ILibraryService>()).DoUserFolderCleanup();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

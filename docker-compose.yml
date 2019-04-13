@@ -1,24 +1,16 @@
 version: '3.4'
 
 services:
-
-  proxy:
-    image: nginx:1.15.11
-    build:
-      context: ./Proxy
-    ports:
-      - "80:80"
-    depends_on:
-      - streamer.web
-      - streamer.api
-
+  
   streamer.web:
     build:
       context: ./WebPlayer/web-player
-    ports:
-      - "8081:80"
     environment:
       RUNTIME_STREAMER_API_URL: 'api'
+    ports:
+      - "80:80"
+    depends_on:
+      - streamer.api
 
   streamer.api:
     image: ${DOCKER_REGISTRY-}streamerapi
@@ -32,8 +24,17 @@ services:
       ASPNETCORE_ENVIRONMENT: 'Development'
       DATABASE_CONNECTIONSTRING: 'Server=database;Database=postgres;Port=5432;User Id=postgres;Password=docker;'
     depends_on:
+      - database.upgrade
+
+  database.upgrade:
+    build:
+      context: ./DatabaseUpgrade
+    environment:
+      DATABASE_CONNECTIONSTRING: 'Server=database;Database=postgres;Port=5432;User Id=postgres;Password=docker;'
+    command: ["sh", "./wait-for.sh", "--timeout=60", "database:5432", "--", "dotnet", "DatabaseUpgrade.dll"]
+    depends_on:
       - database
-      
+
   database:
     restart: always
     image: postgres:11.2
@@ -47,6 +48,4 @@ services:
 
 volumes:
   dbdata:
-    external: true
   mediadata:
-    external: true

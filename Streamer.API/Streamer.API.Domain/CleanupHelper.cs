@@ -1,16 +1,36 @@
-﻿using Streamer.API.Domain.Interfaces;
+﻿using Serilog;
+using Streamer.API.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Streamer.API.Domain.Setup
+namespace Streamer.API.Domain
 {
-    public static class StartupHelper
+    public class CleanupHelper
     {
-        public static void DoUserFolderCleanup(IDataAccess dataAccess, ILibraryService libraryService)
+        private IDataAccess dataAccess;
+        private ILibraryService libraryService;
+
+        public CleanupHelper(IDataAccess dataAccess, ILibraryService libraryService)
         {
-            var userIds = dataAccess.GetAllUserIds();
+            this.libraryService = libraryService;
+            this.dataAccess = dataAccess;
+        }
+
+        public void DoUserFolderCleanup()
+        {
+            Log.Information("{message}", "Starting cleanup.");
+            List<string> userIds;
+            try
+            {
+                userIds = dataAccess.GetAllUserIds();
+            }
+            catch
+            {
+                Log.Error("{message}", "Error when connecting to database.");
+                return;
+            }
             
             var checkedFolders = new List<string>();
 
@@ -45,6 +65,13 @@ namespace Streamer.API.Domain.Setup
                 checkedFolders.Add(libraryPath);
             }
 
+            CleanDirectories(checkedFolders);
+
+            Log.Information("{message}", "Cleanup succesfully completed.");
+        }
+
+        private void CleanDirectories(List<string> checkedFolders)
+        {
             foreach (var directory in Directory.GetDirectories(libraryService.MediaFolder()))
             {
                 if (!checkedFolders.Contains(directory))
