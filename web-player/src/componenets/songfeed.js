@@ -67,7 +67,7 @@ class SongFeed extends Component {
   getRandomSong() {
     var sourceList = this.props.songSource;
     if (sourceList === null || sourceList.length === 0) {
-      throw "No source specified";
+      throw new Error("No source specified");
     }
     var randomIndex = this.getRandom(0, sourceList.length); 
     return sourceList[randomIndex];

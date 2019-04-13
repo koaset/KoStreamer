@@ -256,7 +256,7 @@ class Player extends React.Component {
               onProgress={o => this.onProgress(o)}
               onEnded={() => this.playNextSong()}
               style={{visibility: "hidden"}}
-              fileConfig={{forceAudio:true}}
+              config={{forceAudio:true}}
               playsinline={true}
             />
             <UploadModal 
@@ -350,7 +350,7 @@ class Player extends React.Component {
     }
 
     this.setSongMetadata(song);
-    
+
     this.setState({
       playingSong: song,
       playingSongPlaylistId: playListId,
@@ -365,7 +365,7 @@ class Player extends React.Component {
       window.navigator.mediaSession.metadata = new window.MediaMetadata({
         title: song.title,
         artist: song.artist,
-        album: song. album
+        album: song.album
       });
     }
   }
