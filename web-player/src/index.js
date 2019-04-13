@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 
-import ReactPlayer from 'react-player'
+import ReactAudioPlayer from 'react-audio-player';
 import { GoogleLogin } from 'react-google-login';
 
 import Sidebar from "./componenets/sidebar";
@@ -235,7 +235,7 @@ class Player extends React.Component {
             <Progress 
               className='search-bar' 
               ref={this.progressBar}
-              onClick={(clickInfo) => this.player.current.seekTo(this.progressBar.current.clickPercentage(clickInfo))} 
+              onClick={(clickInfo) => this.onProgressBarClick(clickInfo)}
               completed={songProgress == null ? 0 : songProgress
             }/>
             <SongTable 
@@ -243,21 +243,16 @@ class Player extends React.Component {
               ref={this.songTable} 
               handleRowDoubleClick={(s) => this.handleDoubleClick(s)} 
             />
-            <ReactPlayer
+            <ReactAudioPlayer
               ref={this.player}
-              className='react-player'
-              width='0%'
-              height='0%'
-              url={songUrl}
-              playing={isPlaying}
-              volume={volume}
-              progressInterval={50}
+              src={songUrl}
+              autoPlay={true}
+              controls={false}
               loop={false}
-              onProgress={o => this.onProgress(o)}
+              volume={volume}
+              listenInterval={50}
+              onListen={o => this.onProgress(o)}
               onEnded={() => this.playNextSong()}
-              style={{visibility: "hidden"}}
-              config={{forceAudio:true}}
-              playsinline={true}
             />
             <UploadModal 
               ref={this.uploadModal}
@@ -275,6 +270,15 @@ class Player extends React.Component {
       </div>
     );
   }
+
+  onProgressBarClick(clickInfo) {
+    const playingSong = this.state.playingSong;
+    if (playingSong) {
+      const clickPercent = this.progressBar.current.clickPercentage(clickInfo);
+      this.player.current.audioEl.currentTime = clickPercent * playingSong.durationMs / 1000;
+      this.setState({songProgress: clickPercent * 100});
+    }
+   }
 
   googleButton() {
     var loggedIn = this.state.session ? true : false;
@@ -307,7 +311,7 @@ class Player extends React.Component {
 
   onProgress(progressInfo) {
     const { playingSong } = this.state;
-    var val = progressInfo.playedSeconds / (playingSong.durationMs / 1000) * 100;
+    var val = progressInfo / (playingSong.durationMs / 1000) * 100;
     var percent = this.clampNumber(val, 0, 100);
     this.setState({songProgress: percent});
   }
@@ -333,10 +337,19 @@ class Player extends React.Component {
   }
 
   playOrPause(){
-    this.setState({isPlaying:!this.state.isPlaying});
+    const newIsPlaying = !this.state.isPlaying;
+    if (newIsPlaying) {
+      this.player.current.audioEl.play();
+    }
+    else {
+      this.player.current.audioEl.pause();
+    }
+    
+    this.setState({isPlaying:newIsPlaying});
   }
 
   pauseSong() {
+    this.player.current.audioEl.pause();
     this.setState({isPlaying:false});
   }
 
@@ -350,6 +363,7 @@ class Player extends React.Component {
     }
 
     this.setSongMetadata(song);
+    this.player.current.audioEl.load();
 
     this.setState({
       playingSong: song,
