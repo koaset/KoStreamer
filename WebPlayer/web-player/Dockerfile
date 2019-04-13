@@ -15,7 +15,7 @@ RUN npm run build
 FROM nginx:1.13.9-alpine
 WORKDIR /usr/share/nginx/html/player
 COPY --from=builder /usr/src/app/build .
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./nginx.conf /
 COPY ./docker-start.sh .
 
 EXPOSE 80
