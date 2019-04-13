@@ -4,7 +4,7 @@ services:
   
   streamer.web:
     build:
-      context: ./WebPlayer/web-player
+      context: ./web-player
     environment:
       RUNTIME_STREAMER_API_URL: 'api'
       API_PROXY: 'true'
