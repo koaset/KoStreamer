@@ -75,6 +75,9 @@ class Player extends React.Component {
     this.setState({
       songs: this.songFeed.current.state.list
     });
+
+    this.player.ontimeupdate = () => this.onProgress();
+    this.player.onended = () => this.playNextSong();
   }
 
   signOut() {
@@ -362,16 +365,12 @@ class Player extends React.Component {
       this.songFeed.current.playSongAt(index);
       index = this.songFeed.current.state.numPrev;
     }
-
+    
     this.player.volume = this.state.volume;
     this.player.load();
-    this.player.play();
-
-    this.player.ontimeupdate = () => this.onProgress();
-    this.player.onended = () => this.playNextSong();
-
+    this.player.play().catch(err => {});
+    
     this.setSongMetadata(song);
-
     this.setState({
       playingSong: song,
       playingSongPlaylistId: playListId,
