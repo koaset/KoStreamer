@@ -18,7 +18,7 @@ class SongTable extends Component {
             rowHeight={30}
             rowCount={songs.length}
             rowGetter={({ index }) => songs[index]}
-            onRowDoubleClick={(row) => this.props.handleRowDoubleClick(row.rowData)}
+            onRowDoubleClick={(row) => this.props.handleRowDoubleClick(row.rowData, row.index)}
             rowStyle={ 
               (data) =>  {
                 var index = data.index;

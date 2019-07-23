@@ -250,7 +250,7 @@ class Player extends React.Component {
               songs={showingSongs} 
               playingIndex={playingSongPlaylistId === selectedSongListId ? playingSongIndex : null}
               ref={this.songTable} 
-              handleRowDoubleClick={(s) => this.handleDoubleClick(s)} 
+              handleRowDoubleClick={(s, i) => this.handleDoubleClick(s, i)} 
             />
             <UploadModal 
               ref={this.uploadModal}
@@ -357,13 +357,15 @@ class Player extends React.Component {
     this.setState({isPlaying:false});
   }
 
-  playSong(song, playListId) {
+  playSong(song, playListId, index) {
     var songs = this.getSongsForPlaylist(playListId);
-    var index = songs.findIndex(s => s.id === song.id);
+
+    if (!index) {
+      index = songs.findIndex(s => s.id === song.id);
+    }
     
     if (playListId === songFeedId) {
-      this.songFeed.current.playSongAt(index);
-      index = this.songFeed.current.state.numPrev;
+      index = this.songFeed.current.setPlayingAndGetIndex(index);
     }
     
     this.player.volume = this.state.volume;
@@ -399,7 +401,7 @@ class Player extends React.Component {
       nextIndex = ++currentIndex < songs.length ? currentIndex : 0;
     }
 
-    this.playSong(songs[nextIndex], playingSongPlaylistId);
+    this.playSong(songs[nextIndex], playingSongPlaylistId, nextIndex);
   }
 
   playPreviousSong() {
@@ -425,8 +427,8 @@ class Player extends React.Component {
     })
   }
   
-  handleDoubleClick(s) {
-    this.playSong(s, this.state.selectedSongListId);
+  handleDoubleClick(s, i) {
+    this.playSong(s, this.state.selectedSongListId, i);
   }
 
   onUploadComplete(response) {

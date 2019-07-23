@@ -6,10 +6,10 @@ class SongFeed extends Component {
     super(props);
 
     this.state = {
-      index: 0,
+      currentIndex: 0,
       list: [],
-      nextSongs: 15,
-      numPrev: 0
+      nextSongs: 10,
+      prevSongs: 3,
     };
   }
 
@@ -18,40 +18,46 @@ class SongFeed extends Component {
       return;
     }
 
-    const { list, nextSongs } = this.state;
-    var numSongs = list.length;
+    const { nextSongs } = this.state;
+    var numSongs = 0;
 
-    if (numSongs < nextSongs) {
-      var newSongs = [];
+    var newSongs = [];
 
-      while (numSongs < nextSongs) {
-        var song = this.getRandomSong();
-        newSongs.push(song);
-        numSongs++;
-      }
-
-      this.updateSongs(newSongs);
-    }
-  }
-
-  playSongAt(index) {
-    if (index === 0) {
-      return;
-    }
-    
-    var newSongs = this.state.list.slice();
-
-    var i = 0;
-    while (i < index) {
-      newSongs.shift();
-      i++;
+    while (numSongs < nextSongs) {
       var song = this.getRandomSong();
-      if (song) {
-        newSongs.push(song);
-      }
+      newSongs.push(song);
+      numSongs++;
     }
 
     this.updateSongs(newSongs);
+  }
+
+  setPlayingAndGetIndex(index) {
+    var { prevSongs } = this.state;
+    var newSongs = this.state.list.slice();
+    var newIndex;
+    if (index < prevSongs + 1) {
+      newIndex = index;
+    }
+    else {
+      var i = prevSongs;
+      while (i < index) {
+        newSongs.shift();
+        i++;
+        var song = this.getRandomSong();
+        if (song) {
+          newSongs.push(song);
+        }
+      }
+      newIndex = prevSongs;
+    }
+
+    this.updateSongs(newSongs);
+
+    this.setState({
+      currentIndex: newIndex
+    });
+    return newIndex;
   }
 
   updateSongs(newSongs) {
