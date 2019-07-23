@@ -41,6 +41,8 @@ namespace Streamer.API.Domain
 
                 if (!Directory.Exists(libraryPath))
                 {
+                    foreach(var song in songs)
+                        dataAccess.DeleteSongForUser(song);
                     continue;
                 }
 

@@ -7,7 +7,6 @@
     "fine-uploader": "^5.16.2",
     "fine-uploader-wrappers": "^1.1.0",
     "react": "^16.8.5",
-    "react-audio-player": "^0.11.0",
     "react-dom": "^16.8.5",
     "react-fine-uploader": "^1.1.1",
     "react-google-login": "^5.0.2",

@@ -21,6 +21,7 @@ namespace Streamer.API.Domain
         public LibraryService(IConfiguration configuration, IAccountService accountService, IDataAccess dataAccess)
         {
             mediaFolder = configuration.GetValue<string>("MediaFolder");
+            Directory.CreateDirectory(MediaFolder());
             this.accountService = accountService;
             this.dataAccess = dataAccess;
         }
@@ -41,6 +42,7 @@ namespace Streamer.API.Domain
 
         public async Task<UploadSongResult> AddSongAsync(MemoryStream stream, string fileName)
         {
+            Directory.CreateDirectory(UserLibraryPath());
             // Check user allowed to add size
 
             var extension = GetFileExtension(fileName);

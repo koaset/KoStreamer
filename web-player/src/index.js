@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 
-import ReactAudioPlayer from 'react-audio-player';
 import { GoogleLogin } from 'react-google-login';
 
 import Sidebar from "./componenets/sidebar";
@@ -13,7 +12,7 @@ import SongFeed from './componenets/songfeed';
 
 import './index.css';
 
-var apiPath = window.STREAMER_API_URL ? window.STREAMER_API_URL : 'https://localhost:44361';
+var apiPath = window.STREAMER_API_URL ? window.STREAMER_API_URL : 'http://localhost:55430/';
 
 const songFeedId = 0;
 const libraryId = 1;
@@ -130,7 +129,7 @@ class Player extends React.Component {
 
   fetchSongs(session) {
 
-    if (session == null) {
+    if (session === null) {
       session = this.state.session;
     }
 
@@ -195,21 +194,28 @@ class Player extends React.Component {
   }
 
   render() {
-    const { isPlaying, volume, isLoaded, playingSong, songProgress, session, librarySongs } = this.state;
+    const { isLoaded, playingSong, songProgress, session, librarySongs, playingSongPlaylistId, selectedSongListId, playingSongIndex } = this.state;
     const isPortrait = window.innerWidth * 1.5 < window.innerHeight;
 
     var playPauseButton = this.playPauseButton();
-    var volDownButton = <button className='control-button' onClick={() => this.setState({volume:Math.min(volume + 0.01, 1)})}>vol+</button>;
-    var volUpButton = <button className='control-button' onClick={() => this.setState({volume:Math.max(volume - 0.01, 0)})}>vol-</button>;
+    var volDownButton = <button className='control-button' onClick={() => this.addToVolume(0.01)}>vol+</button>;
+    var volUpButton = <button className='control-button' onClick={() => this.addToVolume(-0.01)}>vol-</button>;
     var playPreviousButton = <button className='control-button' onClick={() => this.playPreviousSong()}>&lt;&lt;</button>;
     var playNextButton = <button className='control-button' onClick={() => this.playNextSong()}>>></button>;
     var uploadButton = <button className='control-button' onClick={() => this.uploadModal.current.show()}>upload</button>;
     
     var songUrl = isLoaded && playingSong != null ? apiPath + '/library/song/play?id=' + playingSong.id + '&sessionId=' +  session : null;
     var showingSongs = this.getSongsForPlaylist(this.state.selectedSongListId);
-
+    
     return (
       <div>
+          <audio 
+            ref={ref => this.player = ref}
+            controls={false}
+            loop={false}
+          >
+            <source src={songUrl}></source>
+          </audio>
           <Sidebar 
             songLists={this.state.songLists}
             onItemSelected={(i) => this.selectPlaylist(i)}
@@ -236,23 +242,13 @@ class Player extends React.Component {
               className='search-bar' 
               ref={this.progressBar}
               onClick={(clickInfo) => this.onProgressBarClick(clickInfo)}
-              completed={songProgress == null ? 0 : songProgress
+              completed={songProgress === null ? 0 : songProgress
             }/>
             <SongTable 
               songs={showingSongs} 
+              playingIndex={playingSongPlaylistId === selectedSongListId ? playingSongIndex : null}
               ref={this.songTable} 
               handleRowDoubleClick={(s) => this.handleDoubleClick(s)} 
-            />
-            <ReactAudioPlayer
-              ref={this.player}
-              src={songUrl}
-              autoPlay={true}
-              controls={false}
-              loop={false}
-              volume={volume}
-              listenInterval={50}
-              onListen={o => this.onProgress(o)}
-              onEnded={() => this.playNextSong()}
             />
             <UploadModal 
               ref={this.uploadModal}
@@ -271,11 +267,17 @@ class Player extends React.Component {
     );
   }
 
+  addToVolume(increment) {
+    var newVol = increment > 0 ? Math.min(this.state.volume + increment, 1) : Math.max(this.state.volume + increment, 0);
+    this.player.volume = newVol;
+    this.setState({volume:newVol});
+  }
+
   onProgressBarClick(clickInfo) {
     const playingSong = this.state.playingSong;
     if (playingSong) {
       const clickPercent = this.progressBar.current.clickPercentage(clickInfo);
-      this.player.current.audioEl.currentTime = clickPercent * playingSong.durationMs / 1000;
+      this.player.currentTime = clickPercent * playingSong.durationMs / 1000;
       this.setState({songProgress: clickPercent * 100});
     }
    }
@@ -309,9 +311,9 @@ class Player extends React.Component {
     return nowPlayingString;
   }
 
-  onProgress(progressInfo) {
+  onProgress() {
     const { playingSong } = this.state;
-    var val = progressInfo / (playingSong.durationMs / 1000) * 100;
+    var val = this.player.currentTime / (playingSong.durationMs / 1000) * 100;
     var percent = this.clampNumber(val, 0, 100);
     this.setState({songProgress: percent});
   }
@@ -339,17 +341,17 @@ class Player extends React.Component {
   playOrPause(){
     const newIsPlaying = !this.state.isPlaying;
     if (newIsPlaying) {
-      this.player.current.audioEl.play();
+      this.player.play();
     }
     else {
-      this.player.current.audioEl.pause();
+      this.player.pause();
     }
     
     this.setState({isPlaying:newIsPlaying});
   }
 
   pauseSong() {
-    this.player.current.audioEl.pause();
+    this.player.current.pause();
     this.setState({isPlaying:false});
   }
 
@@ -362,15 +364,20 @@ class Player extends React.Component {
       index = this.songFeed.current.state.numPrev;
     }
 
+    this.player.volume = this.state.volume;
+    this.player.load();
+    this.player.play();
+
+    this.player.ontimeupdate = () => this.onProgress();
+    this.player.onended = () => this.playNextSong();
+
     this.setSongMetadata(song);
-    this.player.current.audioEl.load();
 
     this.setState({
       playingSong: song,
       playingSongPlaylistId: playListId,
       playingSongIndex: index,
-      isPlaying: true,
-      songProgress: 0
+      isPlaying: true
     });
   }
 
@@ -390,8 +397,7 @@ class Player extends React.Component {
     var songs = this.getSongsForPlaylist(playingSongPlaylistId);
     var currentIndex = playingSongIndex;
     var nextIndex = 0;
-    if (playingSong !== null)
-    {
+    if (playingSong !== null) {
       nextIndex = ++currentIndex < songs.length ? currentIndex : 0;
     }
 
@@ -408,8 +414,7 @@ class Player extends React.Component {
     var songs = this.getSongsForPlaylist(playingSongPlaylistId);
     var currentIndex = playingSongIndex;
     var previousIndex = songs.length - 1;
-    if (playingSong !== null)
-    {
+    if (playingSong !== null) {
       previousIndex = --currentIndex >= 0 ? currentIndex : songs.length - 1;
     }
 
@@ -417,9 +422,9 @@ class Player extends React.Component {
   }
 
   handleClick(s) {
-      this.setState({
-        selectedSong: s
-      })
+    this.setState({
+      selectedSong: s
+    })
   }
   
   handleDoubleClick(s) {
@@ -427,8 +432,7 @@ class Player extends React.Component {
   }
 
   onUploadComplete(response) {
-    if (!response.success)
-    {
+    if (!response.success) {
       return;
     }
     

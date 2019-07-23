@@ -5,7 +5,7 @@ import 'react-virtualized/styles.css'
 class SongTable extends Component {
 
   render() {
-    const { songs } = this.props;
+    const { songs, playingIndex } = this.props;
     const isPortrait = window.innerWidth * 1.5 < window.innerHeight;
     return <AutoSizer>
       {
@@ -22,13 +22,11 @@ class SongTable extends Component {
             rowStyle={ 
               (data) =>  {
                 var index = data.index;
-                var color = "#f5f5f5";
-                if ((index % 2) === 0)
-                  color = "#ffffff";
                 return {
-                  backgroundColor: color,
                   outline: "0px",
-                  paddingRight: "0px"
+                  paddingRight: "0px",
+                  backgroundColor: (index % 2) === 0 ? "#ffffff" : "#f5f5f5",
+                  fontWeight: index === playingIndex ? "bold" : "",
                 };
               }
             }
