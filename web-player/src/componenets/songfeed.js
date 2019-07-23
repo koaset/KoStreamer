@@ -78,7 +78,8 @@ class SongFeed extends Component {
   }
 
   componentDidUpdate (prevProps) {
-    if (prevProps.songSource.length === 0 && this.props.songSource.length > 0) {
+    if (prevProps.songSource && prevProps.songSource.length === 0 && 
+      this.props.songSource && this.props.songSource.length > 0) {
       this.populate();
     }
   }

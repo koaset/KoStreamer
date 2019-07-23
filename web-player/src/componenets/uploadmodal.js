@@ -22,8 +22,10 @@ class UploadModal extends Component {
       appElement={document.getElementById('root')}
       isOpen={this.state.isOpen}
     >
-      <h3>{modalText}</h3>
-      <button onClick={() => this.close()}>Close</button>
+      <div className='upload-top'>
+        <h3>{modalText}</h3>
+        <button className='control-button' onClick={() => this.close()}>Close</button>
+      </div>
       {session ? <div>{<Gallery uploader={ this.uploader() } />}</div> : null}
     </Modal>
   }

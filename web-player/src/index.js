@@ -112,14 +112,13 @@ class Player extends React.Component {
     .then(res => res.json())
     .then(
       (result) => {
-        
         this.setState({
           session: result.session
         });
-
-        this.fetchSongs();
-
+        
         localStorage.setItem('loginResult', JSON.stringify({ session: result.session }));
+        
+        this.fetchSongs(result.session);
       },
       (error) => {
         console.error('Error when logging in.', error);
@@ -285,10 +284,10 @@ class Player extends React.Component {
   googleButton() {
     var loggedIn = this.state.session ? true : false;
     return loggedIn ? (
-      <button
-        className='google-button'
-        onClick={() => {this.signOut()}}
-      >Logout</button>
+    <button
+      className='google-button'
+      onClick={() => {this.signOut()}}
+    >Logout</button>
     ) : (
     <GoogleLogin
       className='google-button'
