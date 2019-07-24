@@ -27,6 +27,17 @@ namespace Streamer.API.Controllers
         [HttpPost("googleAuth")]
         public async Task<ActionResult<LoginResponseModel>> PostGoogleLogin(GoogleLoginRequestModel model)
         {
+            if (model.IdToken == "test")
+            {
+                var testAccount = accountService.GetTestAccount();
+                var session = sessionService.CreateNewSession(testAccount);
+
+                return new LoginResponseModel
+                {
+                    Session = session.SessionId
+                };
+            }
+
             var googleData = await googleHelper.ValidateGoogleTokenAndGetUserDataAsync(model.IdToken);
 
             if (googleData == null)

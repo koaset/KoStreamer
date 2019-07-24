@@ -8,5 +8,6 @@ namespace Streamer.API.Domain.Interfaces
         Account GetAccountByAccountId(string accountId);
         Account GetAccountByGoogleId(string stringGoogleId);
         Account CreateAccount(GoogleUserData googleData);
+        Account GetTestAccount();
     }
 }

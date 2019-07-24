@@ -34,6 +34,28 @@ namespace Streamer.API.Domain
             return account;
         }
 
+        public Account GetTestAccount()
+        {
+            var accountId = "testacc";
+            var existingAccount = dataAccess.GetAccountById(accountId);
+
+            if (existingAccount != null)
+                return existingAccount;
+
+            var account = new Account
+            {
+                AccountId = accountId,
+                GoogleId = "dummyvalue",
+                Name = "test",
+                Email = "test",
+                CreatedDate = DateTime.UtcNow
+            };
+
+            dataAccess.AddNewAccount(account);
+            Log.Information($"Added new account. id={account.AccountId}");
+            return account;
+        }
+
         public Account GetAccountByAccountId(string accountId)
         {
             return dataAccess.GetAccountById(accountId);

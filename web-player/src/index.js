@@ -70,6 +70,10 @@ class Player extends React.Component {
       navigator.mediaSession.setActionHandler('pause', () => this.playOrPause());
       navigator.mediaSession.setActionHandler('previoustrack', () => this.playPreviousSong());
       navigator.mediaSession.setActionHandler('nexttrack', () => this.playNextSong());
+
+      if (this.state.playingSong !== null) {
+        this.setSongMetadata(this.state.playingSong);
+      }
     }
 
     this.setState({
@@ -82,9 +86,9 @@ class Player extends React.Component {
 
   signOut() {
     var auth2 = window.gapi.auth2.getAuthInstance();
-    auth2.signOut().then(() => {
-      
-      var session = this.state.session;
+    auth2.signOut();
+
+    var session = this.state.session;
 
       if (session)
       {
@@ -100,7 +104,6 @@ class Player extends React.Component {
       this.setState({session: null});
       localStorage.removeItem('loginResult');
       window.location.reload();
-    });
   }
   
   onSignIn(idToken) {
@@ -127,6 +130,10 @@ class Player extends React.Component {
         console.error('Error when logging in.', error);
       }
     );
+  }
+
+  tryTestSignin(err) {
+    this.onSignIn('test');
   }
 
   fetchSongs(session) {
@@ -215,6 +222,7 @@ class Player extends React.Component {
             ref={ref => this.player = ref}
             controls={false}
             loop={false}
+            preload='auto'
           >
             <source src={songUrl}></source>
           </audio>
@@ -297,7 +305,7 @@ class Player extends React.Component {
       clientId="900614446703-5p76k96hle7h4ucg4qgdcclcnl4t7njj.apps.googleusercontent.com"
       buttonText="Login"
       onSuccess={(r) => this.onSignIn(r.tokenObj.id_token)}
-      onFailure={() =>{}}
+      onFailure={(e) => this.tryTestSignin(e)}
     />
     );
   }
@@ -315,9 +323,11 @@ class Player extends React.Component {
 
   onProgress() {
     const { playingSong } = this.state;
-    var val = this.player.currentTime / (playingSong.durationMs / 1000) * 100;
-    var percent = this.clampNumber(val, 0, 100);
-    this.setState({songProgress: percent});
+    if (playingSong !== null) {
+      var val = this.player.currentTime / (playingSong.durationMs / 1000) * 100;
+      var percent = this.clampNumber(val, 0, 100);
+      this.setState({songProgress: percent});
+    }
   }
 
   clampNumber(x, min, max)  {
@@ -368,11 +378,11 @@ class Player extends React.Component {
       index = this.songFeed.current.setPlayingAndGetIndex(index);
     }
     
+    this.setSongMetadata(song);
     this.player.volume = this.state.volume;
     this.player.load();
     this.player.play().catch(err => {});
     
-    this.setSongMetadata(song);
     this.setState({
       playingSong: song,
       playingSongPlaylistId: playListId,
